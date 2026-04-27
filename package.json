@@ -1,0 +1,56 @@
+{
+  "name": "rnh-imports",
+  "description": "RNH Imports — trusted importation and logistics company based in Ghana, sourcing quality products from China.",
+  "version": "0.1.0",
+  "private": true,
+  "author": "RNH Imports <info@rnhimports.com>",
+  "license": "UNLICENSED",
+  "homepage": "https://rnhimports.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/rnh-imports.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YOUR_USERNAME/rnh-imports/issues"
+  },
+  "keywords": [
+    "imports",
+    "ghana",
+    "logistics",
+    "china",
+    "ecommerce"
+  ],
+  "dependencies": {
+    "@react-google-maps/api": "^2.19.3",
+    "@supabase/supabase-js": "^2.91.1",
+    "framer-motion": "^12.34.0",
+    "next": "^15.5.12",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^3.0.2",
+    "resend": "^6.9.1",
+    "stripe": "^20.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^15.0.0",
+    "postcss": "^8.5.5",
+    "sharp": "^0.33.5",
+    "tailwindcss": "^3.4.17",
+    "typescript": "5.9.3"
+  },
+  "scripts": {
+    "build": "next build",
+    "dev": "npx next dev -H 0.0.0.0 -p 3001",
+    "lint": "next lint",
+    "compress:images": "node scripts/compress-media.mjs",
+    "compress:video": "sh scripts/compress-video.sh",
+    "set-admin": "node --env-file=.env.local scripts/set-admin-role.mjs"
+  }
+}
