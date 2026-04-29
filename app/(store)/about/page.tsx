@@ -14,11 +14,11 @@ export default function AboutPage() {
   // CMS-driven content
   const heroTitle = getSetting('about_hero_title') || 'Our Story';
   const heroSubtitle = getSetting('about_hero_subtitle') || 'Making premium tech accessible to every Ghanaian — one genuine import at a time.';
-  const storyTitle = getSetting('about_story_title') || 'From Vision to Trusted Partner';
+  const storyTitle = getSetting('about_story_title') || 'About Us — RNH Imports';
   const storyContent = getSetting('about_story_content') || '';
   const storyImage = '/images/gallery/founder-team.png';
-  const founderName = getSetting('about_founder_name') || 'Founder';
-  const founderTitle = getSetting('about_founder_title') || 'CEO & Founder';
+  const founderName = getSetting('about_founder_name') || 'Randy & Hannah';
+  const founderTitle = getSetting('about_founder_title') || 'Co-Founders';
   const mission1Title = getSetting('about_mission1_title') || 'Sourced Directly, Priced Fairly';
   const mission1Content = getSetting('about_mission1_content') || '';
   const mission2Title = getSetting('about_mission2_title') || 'Genuine Products, Every Time';
@@ -109,13 +109,22 @@ export default function AboutPage() {
                 ) : (
                   <>
                     <p>
-                      RNH Imports was founded with a clear vision: to bridge the gap between international suppliers and the Ghanaian market — making global trade simple, reliable, and accessible for everyone.
+                      RNH Imports is a trusted importation and logistics company based in Ghana, committed to making global trade simple, reliable, and accessible for individuals and businesses.
                     </p>
                     <p>
-                      We specialise in sourcing high-quality products from China and delivering them safely and efficiently to individuals and businesses across Ghana. From finding the right suppliers to handling shipping, customs clearance, and last-mile delivery, we provide a seamless, end-to-end solution.
+                      Founded with a vision to bridge the gap between international suppliers and the Ghanaian market, we specialize in sourcing high quality products from China and delivering them safely and efficiently to our clients in Ghana.
                     </p>
                     <p>
-                      <strong className="font-bold text-gray-900">{siteName}</strong> is built on trust, transparency, and reliability. We don&apos;t just move goods — we build lasting relationships and help businesses grow through smart, efficient import solutions.
+                      At RNH Imports, we understand that importation can feel overwhelming, from finding the right suppliers to handling shipping, customs clearance, and delivery. That is why we provide a seamless, end to end solution that takes the stress off our clients and guarantees peace of mind.
+                    </p>
+                    <p>
+                      With a strong network of verified suppliers, efficient shipping systems, and a dedicated warehouse presence in Ghana, we ensure that every item entrusted to us is handled with care and delivered on time.
+                    </p>
+                    <p>
+                      Our company is built on trust, transparency, and reliability. Whether you are a small business owner, a growing brand, or an individual looking to import goods, RNH Imports is your dependable partner every step of the way.
+                    </p>
+                    <p>
+                      We do not just move goods, we build lasting relationships and help businesses grow through smart, efficient import solutions.
                     </p>
                   </>
                 )}
@@ -191,8 +200,8 @@ export default function AboutPage() {
             <div className="relative order-2 lg:order-1">
               <div className="relative aspect-[4/5] max-w-md mx-auto rounded-3xl overflow-hidden bg-gray-900 shadow-2xl shadow-gray-300/50">
                 <img
-                  src="/images/reviews/phone-mockup-cards.png"
-                  alt="Customer reviews of RNH Imports"
+                  src="/images/about/customer-voices-team.png"
+                  alt="RNH Imports team outside the Ghana operations location"
                   loading="lazy"
                   className="w-full h-full object-cover"
                 />

@@ -459,9 +459,18 @@ export default function SettingsPage() {
 
                             <div className="grid md:grid-cols-2 gap-5 pt-2">
                                 <FieldGroup label="Copyright Text" description="Leave blank to auto-generate"><input type="text" value={val('footer_copyright_text')} onChange={e => set('footer_copyright_text', e.target.value)} className={inputClass} placeholder="© 2025 Store Name" /></FieldGroup>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <FieldGroup label="Powered By Text"><input type="text" value={val('footer_powered_by')} onChange={e => set('footer_powered_by', e.target.value)} className={inputClass} /></FieldGroup>
-                                    <FieldGroup label="Powered By Link"><input type="url" value={val('footer_powered_by_link')} onChange={e => set('footer_powered_by_link', e.target.value)} className={inputClass} /></FieldGroup>
+                                <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-4">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Powered by credit</p>
+                                    <p className="mt-1 text-xs text-gray-600">Fixed for this site — not editable from the dashboard.</p>
+                                    <p className="mt-3 text-sm font-medium text-gray-900">Powered by Doctorbarns Tech</p>
+                                    <a
+                                        href="https://doctorbarns.com/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="mt-1 inline-block text-sm text-blue-700 hover:underline break-all"
+                                    >
+                                        https://doctorbarns.com/
+                                    </a>
                                 </div>
                             </div>
                         </SectionCard>

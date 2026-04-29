@@ -53,8 +53,10 @@ export default function Header() {
 
   const siteName     = getSetting('site_name') || 'RNH Imports';
   const siteLogo     = '/logo.png';
-  const rawLogoH     = Number.parseInt(getSetting('header_logo_height') || '36', 10);
-  const logoHeight   = Number.isFinite(rawLogoH) ? Math.min(56, Math.max(24, rawLogoH)) : 36;
+  const rawLogoH = Number.parseInt(getSetting('header_logo_height') || '52', 10);
+  /** px — larger default on desktop & mobile */
+  const logoHeight = Number.isFinite(rawLogoH) ? Math.min(72, Math.max(26, rawLogoH)) : 52;
+  const scrolledLogoH = isScrolled ? Math.max(logoHeight - 8, 28) : logoHeight;
   const showSearch   = getSetting('header_show_search')   !== 'false';
   const showWishlist = getSetting('header_show_wishlist') !== 'false';
   const showCart     = getSetting('header_show_cart')     !== 'false';
@@ -188,7 +190,7 @@ export default function Header() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-14' : 'h-16'}`}>
+          <div className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? 'min-h-[3.25rem] sm:min-h-14 py-2' : 'min-h-[3.85rem] sm:min-h-[4.85rem] py-2 sm:py-2.5'}`}>
 
             {/* ── Left: hamburger + logo ── */}
             <div className="flex items-center gap-3 min-w-0">
@@ -206,7 +208,7 @@ export default function Header() {
                     src={siteLogo}
                     alt={siteName}
                     className="w-auto object-contain transition-all duration-300"
-                    style={{ height: `${isScrolled ? Math.max(logoHeight - 4, 24) : logoHeight}px` }}
+                    style={{ height: `${scrolledLogoH}px` }}
                     onError={() => setLogoError(true)}
                   />
                 ) : (
@@ -544,7 +546,13 @@ export default function Header() {
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2">
                 {!logoError ? (
-                  <img src={siteLogo} alt={siteName} className="h-8 w-auto object-contain" onError={() => setLogoError(true)} />
+                  <img
+                    src={siteLogo}
+                    alt={siteName}
+                    className="w-auto max-w-[200px] object-contain"
+                    style={{ height: `${logoHeight}px` }}
+                    onError={() => setLogoError(true)}
+                  />
                 ) : (
                   <span className="font-bold text-primary text-lg">{siteName}</span>
                 )}

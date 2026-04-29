@@ -56,6 +56,8 @@ interface ProductCardProps {
   minVariantPrice?: number;
   colorVariants?: ColorVariant[];
   brand?: string;
+  /** Shop mobile 2-column grid: tighter spacing & type */
+  density?: 'default' | 'compact';
 }
 
 export default function ProductCard({
@@ -75,7 +77,9 @@ export default function ProductCard({
   minVariantPrice,
   colorVariants = [],
   brand,
+  density = 'default',
 }: ProductCardProps) {
+  const compact = density === 'compact';
   const { addToCart } = useCart();
   const { getSetting } = useCMS();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
@@ -124,29 +128,37 @@ export default function ProductCard({
   };
 
   return (
-    <article className="group relative h-full flex flex-col bg-white transition-all duration-500 hover:-translate-y-1">
+    <article
+      className={`group relative h-full flex flex-col bg-white transition-all duration-500 hover:-translate-y-1 min-w-0 ${compact ? 'max-sm:hover:translate-y-0' : ''}`}
+    >
       {/* ── Image Frame ─────────────────────────────────────────── */}
       <Link
         href={`/product/${slug}`}
-        className="relative block aspect-[5/4] overflow-hidden bg-[radial-gradient(ellipse_at_center,_#fafafa_0%,_#f0f0f0_100%)] rounded-xl ring-1 ring-black/5 transition-shadow duration-500 group-hover:ring-black/10 group-hover:shadow-[0_18px_40px_-18px_rgba(15,26,71,0.25)]"
+        className={`relative block overflow-hidden bg-[radial-gradient(ellipse_at_center,_#fafafa_0%,_#f0f0f0_100%)] rounded-lg sm:rounded-xl ring-1 ring-black/5 transition-shadow duration-500 group-hover:ring-black/10 group-hover:shadow-[0_18px_40px_-18px_rgba(15,26,71,0.25)] ${compact ? 'aspect-[4/5]' : 'aspect-[5/4]'}`}
         aria-label={`View ${name}`}
       >
         <LazyImage
           src={image}
           alt={name}
-          className="w-full h-full object-contain p-3 sm:p-4 transition-transform duration-700 ease-out group-hover:scale-110"
+          className={`w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-110 ${compact ? 'p-1.5 sm:p-3' : 'p-3 sm:p-4'}`}
         />
 
         {/* Badges — top-left, vertical stack so they never overlap */}
-        <div className="absolute top-3 left-3 flex flex-col items-start gap-1.5 pointer-events-none">
+        <div
+          className={`absolute flex flex-col items-start pointer-events-none ${compact ? 'top-1.5 left-1.5 gap-1' : 'top-3 left-3 gap-1.5'}`}
+        >
           {badge && (
-            <span className="inline-flex items-center gap-1 bg-black/85 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-[0.12em] px-2.5 py-1 rounded-full shadow-sm">
-              <span className="w-1 h-1 rounded-full bg-amber-400" />
+            <span
+              className={`inline-flex items-center gap-0.5 bg-black/85 backdrop-blur-md text-white font-bold uppercase tracking-[0.12em] rounded-full shadow-sm ${compact ? 'text-[8px] sm:text-[10px] px-1.5 py-0.5 sm:px-2.5 sm:py-1' : 'text-[10px] px-2.5 py-1'}`}
+            >
+              <span className={`rounded-full bg-amber-400 ${compact ? 'w-0.5 h-0.5 sm:w-1 sm:h-1' : 'w-1 h-1'}`} />
               {badge}
             </span>
           )}
           {hasDiscount && (
-            <span className="inline-flex items-center bg-red-500 text-white text-[10px] font-bold uppercase tracking-[0.12em] px-2.5 py-1 rounded-full shadow-sm">
+            <span
+              className={`inline-flex items-center bg-red-500 text-white font-bold uppercase tracking-[0.12em] rounded-full shadow-sm ${compact ? 'text-[8px] sm:text-[10px] px-1.5 py-0.5 sm:px-2.5 sm:py-1' : 'text-[10px] px-2.5 py-1'}`}
+            >
               −{discountPct}%
             </span>
           )}
@@ -158,18 +170,20 @@ export default function ProductCard({
           onClick={handleWishlist}
           aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
           aria-pressed={inWishlist}
-          className={`absolute top-3 right-3 w-9 h-9 rounded-full backdrop-blur-md flex items-center justify-center transition-all duration-300 shadow-sm hover:scale-110 active:scale-95 ${
-            inWishlist
-              ? 'bg-red-500 text-white'
-              : 'bg-white/80 text-gray-700 hover:bg-white hover:text-red-500 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0'
+          className={`rounded-full backdrop-blur-md flex items-center justify-center transition-all duration-300 shadow-sm hover:scale-110 active:scale-95 ${
+            compact
+              ? `absolute top-1.5 right-1.5 w-7 h-7 sm:w-9 sm:h-9 sm:top-3 sm:right-3 max-sm:opacity-100 max-sm:translate-y-0 ${inWishlist ? 'bg-red-500 text-white' : 'bg-white/80 text-gray-700 hover:bg-white hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-y-1 sm:group-hover:translate-y-0'}`
+              : `absolute top-3 right-3 w-9 h-9 ${inWishlist ? 'bg-red-500 text-white' : 'bg-white/80 text-gray-700 hover:bg-white hover:text-red-500 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0'}`
           }`}
         >
-          <i className={`${inWishlist ? 'ri-heart-fill' : 'ri-heart-line'} text-base`} />
+          <i className={`${inWishlist ? 'ri-heart-fill' : 'ri-heart-line'} ${compact ? 'text-xs sm:text-base' : 'text-base'}`} />
         </button>
 
         {/* Stock indicator — bottom-right */}
         {inStock && lowStock && (
-          <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ring-1 ring-amber-200">
+          <span
+            className={`absolute inline-flex items-center gap-0.5 bg-amber-50 text-amber-700 font-bold uppercase ring-amber-200 rounded-full ring-1 ${compact ? 'bottom-1.5 right-1.5 text-[8px] px-1.5 py-0.5 sm:bottom-3 sm:right-3 sm:text-[10px] sm:px-2.5 tracking-wide' : 'bottom-3 right-3 text-[10px] tracking-wider px-2.5 py-1'}`}
+          >
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75 animate-ping" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500" />
@@ -178,9 +192,11 @@ export default function ProductCard({
           </span>
         )}
 
-        {/* Quick view — bottom-left, slides in on hover */}
+        {/* Quick view — bottom-left; hidden on compact mobile */}
         {inStock && (
-          <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-gray-900 text-[11px] font-semibold px-3 py-1.5 rounded-full shadow-sm opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+          <span
+            className={`absolute bg-white/95 backdrop-blur-md text-gray-900 font-semibold rounded-full shadow-sm opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 items-center ${compact ? 'hidden sm:inline-flex bottom-3 left-3 gap-1.5 text-[11px] px-3 py-1.5' : 'bottom-3 left-3 inline-flex gap-1.5 text-[11px] px-3 py-1.5'}`}
+          >
             <i className="ri-eye-line text-sm" />
             Quick view
           </span>
@@ -197,19 +213,21 @@ export default function ProductCard({
       </Link>
 
       {/* ── Info ────────────────────────────────────────────────── */}
-      <div className="flex flex-col flex-grow pt-2.5 px-0.5">
+      <div className={`flex flex-col flex-grow ${compact ? 'pt-1.5 sm:pt-2.5 px-0' : 'pt-2.5 px-0.5'}`}>
         {/* Brand + rating on one line */}
         {(brand || rating > 0) && (
-          <div className="flex items-center justify-between gap-2 mb-1">
+          <div className={`flex items-center justify-between gap-1 ${compact ? 'mb-0.5' : 'mb-1'}`}>
             {brand ? (
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400 truncate">
+              <p
+                className={`font-bold uppercase text-gray-400 truncate ${compact ? 'text-[8px] sm:text-[10px] tracking-[0.12em] sm:tracking-[0.16em]' : 'text-[10px] tracking-[0.16em]'}`}
+              >
                 {brand}
               </p>
             ) : <span />}
             {rating > 0 && (
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <i className="ri-star-fill text-[11px] text-amber-400" />
-                <span className="text-[11px] text-gray-500 font-medium">
+              <div className="flex items-center gap-0.5 flex-shrink-0">
+                <i className={`ri-star-fill text-amber-400 ${compact ? 'text-[9px] sm:text-[11px]' : 'text-[11px]'}`} />
+                <span className={`text-gray-500 font-medium ${compact ? 'text-[9px] sm:text-[11px]' : 'text-[11px]'}`}>
                   {rating.toFixed(1)}{reviewCount > 0 ? ` (${reviewCount})` : ''}
                 </span>
               </div>
@@ -218,15 +236,17 @@ export default function ProductCard({
         )}
 
         {/* Name */}
-        <Link href={`/product/${slug}`} className="mb-1.5">
-          <h3 className="font-serif text-sm sm:text-[15px] leading-snug text-gray-900 line-clamp-2 transition-colors group-hover:text-primary">
+        <Link href={`/product/${slug}`} className={compact ? 'mb-1 sm:mb-1.5' : 'mb-1.5'}>
+          <h3
+            className={`font-serif leading-snug text-gray-900 line-clamp-2 transition-colors group-hover:text-primary ${compact ? 'text-[11px] sm:text-[15px]' : 'text-sm sm:text-[15px]'}`}
+          >
             {name}
           </h3>
         </Link>
 
         {/* Color swatches */}
         {colorVariants.length > 0 && (
-          <div className="flex items-center gap-1.5 mb-1.5">
+          <div className={`flex items-center ${compact ? 'gap-1 mb-1' : 'gap-1.5 mb-1.5'}`}>
             {colorVariants.slice(0, MAX_SWATCHES).map((color) => (
               <button
                 key={color.name}
@@ -235,7 +255,7 @@ export default function ProductCard({
                   e.preventDefault();
                   setActiveColor(activeColor === color.name ? null : color.name);
                 }}
-                className={`relative w-4 h-4 rounded-full transition-all duration-200 flex-shrink-0 ${
+                className={`relative rounded-full transition-all duration-200 flex-shrink-0 ${compact ? 'w-3 h-3 sm:w-4 sm:h-4' : 'w-4 h-4'} ${
                   activeColor === color.name
                     ? 'ring-2 ring-offset-1 ring-gray-900 scale-110'
                     : 'ring-1 ring-black/10 hover:scale-110 hover:ring-gray-400'
@@ -245,7 +265,7 @@ export default function ProductCard({
               />
             ))}
             {colorVariants.length > MAX_SWATCHES && (
-              <span className="text-[10px] text-gray-400 ml-0.5 font-medium">
+              <span className={`text-gray-400 ml-0.5 font-medium ${compact ? 'text-[8px] sm:text-[10px]' : 'text-[10px]'}`}>
                 +{colorVariants.length - MAX_SWATCHES}
               </span>
             )}
@@ -253,18 +273,24 @@ export default function ProductCard({
         )}
 
         {/* Price block */}
-        <div className="mt-auto mb-2">
-          <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="font-sans text-base sm:text-lg font-bold text-gray-900 tracking-tight leading-none">
+        <div className={`mt-auto ${compact ? 'mb-1 sm:mb-2' : 'mb-2'}`}>
+          <div
+            className={`flex flex-wrap ${compact ? 'flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2' : 'items-baseline gap-2'}`}
+          >
+            <span
+              className={`font-sans font-bold text-gray-900 tracking-tight leading-none ${compact ? 'text-xs sm:text-lg' : 'text-base sm:text-lg'}`}
+            >
               {hasVariants && minVariantPrice != null ? `From ${formatPrice(minVariantPrice)}` : formatPrice(displayPrice)}
             </span>
             {hasDiscount && (
-              <span className="text-xs text-gray-400 line-through font-medium">
+              <span className={`text-gray-400 line-through font-medium ${compact ? 'text-[10px] sm:text-xs' : 'text-xs'}`}>
                 {formatPrice(originalPrice!)}
               </span>
             )}
             {hasDiscount && (
-              <span className="text-[10px] font-semibold text-emerald-600 ml-auto tracking-wide">
+              <span
+                className={`font-semibold text-emerald-600 tracking-wide ${compact ? 'text-[9px] sm:text-[10px] sm:ml-auto' : 'text-[10px] ml-auto'}`}
+              >
                 Save {formatPrice(savings)}
               </span>
             )}
@@ -275,32 +301,32 @@ export default function ProductCard({
         {hasVariants ? (
           <Link
             href={`/product/${slug}`}
-            className="group/btn relative w-full flex items-center justify-center gap-2 bg-white border border-gray-900 text-gray-900 font-semibold text-xs py-2 px-3 rounded-full overflow-hidden transition-colors hover:bg-gray-900 hover:text-white"
+            className={`group/btn relative w-full flex items-center justify-center bg-white border border-gray-900 text-gray-900 font-semibold rounded-full overflow-hidden transition-colors hover:bg-gray-900 hover:text-white ${compact ? 'gap-1 py-1.5 px-2 text-[10px] sm:gap-2 sm:py-2 sm:px-3 sm:text-xs' : 'gap-2 py-2 px-3 text-xs'}`}
           >
-            <i className="ri-settings-3-line text-base transition-transform group-hover/btn:rotate-90" />
-            <span>Select Options</span>
+            <i className={`ri-settings-3-line transition-transform group-hover/btn:rotate-90 ${compact ? 'text-sm sm:text-base' : 'text-base'}`} />
+            <span className={compact ? 'truncate' : ''}>Select Options</span>
           </Link>
         ) : (
           <button
             type="button"
             onClick={handleAddToCart}
             disabled={!inStock}
-            className={`group/btn relative w-full flex items-center justify-center gap-2 font-semibold text-xs py-2 px-3 rounded-full overflow-hidden transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`group/btn relative w-full flex items-center justify-center font-semibold rounded-full overflow-hidden transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${
               justAdded
                 ? 'bg-emerald-600 text-white'
                 : 'bg-gray-900 text-white hover:bg-primary'
-            }`}
+            } ${compact ? 'gap-1 py-1.5 px-2 text-[10px] sm:gap-2 sm:py-2 sm:px-3 sm:text-xs' : 'gap-2 py-2 px-3 text-xs'}`}
           >
             {justAdded ? (
               <>
-                <i className="ri-check-line text-base" />
-                <span>Added to cart</span>
+                <i className={`ri-check-line ${compact ? 'text-sm sm:text-base' : 'text-base'}`} />
+                <span>Added</span>
               </>
             ) : (
               <>
-                <i className="ri-shopping-bag-line text-base transition-transform group-hover/btn:-translate-y-0.5" />
+                <i className={`ri-shopping-bag-line transition-transform group-hover/btn:-translate-y-0.5 ${compact ? 'text-sm sm:text-base' : 'text-base'}`} />
                 <span>Add to cart</span>
-                <i className="ri-arrow-right-line text-base opacity-0 -ml-2 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:ml-0" />
+                <i className={`ri-arrow-right-line opacity-0 -ml-2 transition-all duration-300 group-hover/btn:opacity-100 group-hover/btn:ml-0 ${compact ? 'hidden sm:inline text-base' : 'text-base'}`} />
               </>
             )}
           </button>

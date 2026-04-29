@@ -65,8 +65,8 @@ export default async function CategoriesPage() {
         {/* Full-bleed hero image */}
         <div className="absolute inset-0">
           <Image
-            src="/categories-hero.png"
-            alt="Premium electronics — laptops, phones, cameras and audio, curated for RNH Imports collections"
+            src="/images/gallery/sourcing-partners.png"
+            alt="Supplier partnerships and international sourcing — RNH Imports collections"
             fill
             priority
             sizes="100vw"

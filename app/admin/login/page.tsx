@@ -79,7 +79,7 @@ function AdminLoginForm() {
               <div>
                 <p className="text-amber-800 font-semibold">Profile not found</p>
                 <p className="text-amber-700 text-sm mt-1">
-                  Your account exists but has no profile row. Run the SQL in the instructions below in Supabase SQL Editor to grant yourself admin access.
+                  Your account exists but has no profile row. Ask an administrator to create your profile in the database or contact support.
                 </p>
               </div>
             </div>
@@ -154,26 +154,6 @@ function AdminLoginForm() {
 
           {/* Admin access is restricted to users with admin/staff role */}
         </div>
-
-        <details className="mt-6 bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
-          <summary className="px-4 py-3 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100">
-            How to grant admin access (Supabase)
-          </summary>
-          <div className="px-4 pb-4 text-sm text-gray-600 space-y-2">
-            <p>1. Sign up or sign in once with the email you want as admin.</p>
-            <p>2. In Supabase Dashboard go to SQL Editor and run one of these (replace the email):</p>
-            <pre className="bg-primary text-gray-100 p-3 rounded-lg overflow-x-auto text-xs mt-2">
-{`-- If you already have a profile (e.g. signed up on the store):
-UPDATE profiles SET role = 'admin' WHERE email = 'your@email.com';
-
--- If you have no profile row (e.g. user created in Auth only):
-INSERT INTO profiles (id, email, role)
-SELECT id, email, 'admin' FROM auth.users WHERE email = 'your@email.com'
-ON CONFLICT (id) DO UPDATE SET role = 'admin';`}
-            </pre>
-            <p>3. Sign in again at this page.</p>
-          </div>
-        </details>
 
         <div className="mt-6 text-center">
           <Link href="/" className="text-sm text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">

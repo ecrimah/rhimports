@@ -88,11 +88,11 @@ export default function ServicePage() {
   return (
     <div className="min-h-screen bg-white">
       <section className="relative overflow-hidden bg-[#0B1230] text-white pt-20 lg:pt-24 pb-14 lg:pb-16">
-        <div className="absolute inset-0 opacity-30 pointer-events-none">
+        <div className="absolute inset-0 opacity-35 pointer-events-none">
           <img
-            src="/images/whatsapp-feedback.png"
-            alt="Services Background"
-            className="w-full h-full object-cover"
+            src="/images/gallery/factory-meeting.png"
+            alt="Factory product meetings — RNH Imports import operations"
+            className="w-full h-full object-cover object-center"
           />
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-[#0B1230] via-[#0B1230]/80 to-transparent pointer-events-none"></div>

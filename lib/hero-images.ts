@@ -1,30 +1,38 @@
 /**
- * Hero images from public folder.
- * First 3 = home page slider; rest = other pages' hero sections.
- * Replace with your own images — add files to /public and update the paths below.
+ * Home hero carousel (6 slides).
+ * Operational photos in /images/home plus gallery picks for sourcing context.
  */
-export const HERO_IMAGES = [
-  '/hero/iphone.jpg',
-  '/hero/dell-laptop.jpg',
-  '/hero/canon-camera.jpg',
-  '/hero/hero_smartwatch.png',
-  '/hero/hero_earbuds.png',
-  '/hero/hero_drone.png',
-  '/hero/hero_gaming_console.png',
-  '/hero/hero_vr_headset.png',
-  '/hero/hero_keyboard.png',
-  '/hero/hero_monitor.png',
-  '/hero/hero_microphone.png',
-  '/hero/hero_powerbank.png',
-  '/hero/hero_action_camera.png',
-  '/hero/hero_smart_speaker.png',
-  '/hero/hero_tablet_setup.png',
-  '/hero/hero_lens.png',
-  '/hero/hero_laptop_setup.png',
+const HOME_HERO_SLIDER = [
+  '/images/home/hero-slider-1-container-unloading.png',
+  '/images/home/hero-slider-2-forklift.png',
+  '/images/home/hero-slider-3-team-hq.png',
+  '/images/gallery/container-load.png',
+  '/images/gallery/factory-meeting.png',
+  '/images/gallery/sourcing-partners.png',
 ] as const;
 
-/** Home page slider (first 3) */
-export const HERO_SLIDES_HOME = HERO_IMAGES.slice(0, 3);
+export const HERO_SLIDES_HOME = [...HOME_HERO_SLIDER];
 
-/** For other pages' hero sections (remaining 14) */
+/**
+ * Secondary page heroes — gallery + repeats (same pool as before for shop/about/contact).
+ */
+const SERVICE_GALLERY_HERO = [
+  '/images/gallery/container-load.png',
+  '/images/gallery/factory-meeting.png',
+  '/images/gallery/sourcing-partners.png',
+  '/images/gallery/forklift-offload.png',
+  '/images/gallery/delivery-unload.png',
+  '/images/gallery/factory-inspection.png',
+  '/images/gallery/rnh-team-hq.png',
+  '/images/gallery/team-partner-review.png',
+] as const;
+
+export const HERO_IMAGES = [
+  ...SERVICE_GALLERY_HERO.slice(0, 3),
+  ...SERVICE_GALLERY_HERO.slice(3),
+  SERVICE_GALLERY_HERO[0],
+  SERVICE_GALLERY_HERO[2],
+] as const;
+
+/** Shop, About, Contact, Cart, Wishlist heroes */
 export const HERO_IMAGES_OTHER_PAGES = HERO_IMAGES.slice(3);

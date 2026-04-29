@@ -92,7 +92,7 @@ export default function Home() {
   }, [HERO_SLIDES.length]);
 
   // ── CMS values ────────────────────────────────────────────────────
-  const heroHeadline     = 'Premium Tech.\nDelivered Fresh.';
+  const heroHeadline     = getSetting('hero_headline').trim() || 'Quality yet Affordable';
   const heroSubheadline  = 'The latest laptops, cameras, and gadgets — sourced globally and delivered straight to you in Ghana.';
   const heroPrimaryText  = 'Shop Now';
   const heroPrimaryLink  = '/shop';
@@ -188,7 +188,7 @@ export default function Home() {
               transition={{ scale: { type: 'spring', stiffness: 220, damping: 28 }, opacity: { duration: 0.55 } }}
               className="absolute inset-0"
             >
-              <img src={HERO_SLIDES[heroIndex]} className="w-full h-full object-cover object-top" alt="" />
+              <img src={HERO_SLIDES[heroIndex]} className="w-full h-full object-cover object-center" alt="" />
             </motion.div>
           </AnimatePresence>
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/15 pointer-events-none" />
@@ -273,81 +273,9 @@ export default function Home() {
 
 
       {/* ══════════════════════════════════════════════════════════
-          4 · CATEGORIES
+          4 · FEATURED PRODUCTS
       ══════════════════════════════════════════════════════════ */}
-      <section className="pt-24 pb-10 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <AnimatedSection className="flex items-end justify-between mb-14">
-            <div>
-              <span className="text-gray-400 font-bold tracking-widest uppercase text-[10px] mb-3 block">Collections</span>
-              <h2 className="font-serif text-4xl md:text-5xl text-gray-900 leading-tight">Shop by Category</h2>
-              <p className="text-gray-400 text-lg mt-3 max-w-md font-light">Genuine electronics, gadgets, and tech — sourced directly and priced honestly.</p>
-            </div>
-            <Link href="/categories" className="hidden md:flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-primary hover:gap-3 transition-all">
-              View All <i className="ri-arrow-right-line" />
-            </Link>
-          </AnimatedSection>
-
-          {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {Array(6).fill(0).map((_, i) => <div key={i} className="aspect-square rounded-2xl bg-gray-100 animate-pulse" />)}
-            </div>
-          ) : categories.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {categories.map((cat) => (
-                <Link href={`/shop?category=${cat.slug}`} key={cat.id} className="group block">
-                  <div className="aspect-square rounded-2xl overflow-hidden relative shadow-sm hover:shadow-xl transition-all duration-500 bg-gray-100">
-                    <Image
-                      src={cat.image || cat.image_url || `https://via.placeholder.com/600x800?text=${encodeURIComponent(cat.name)}`}
-                      alt={cat.name}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
-                      sizes="(max-width: 1024px) 33vw, 16vw"
-                      quality={85}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                    <div className="absolute bottom-4 inset-x-0 px-3 text-center">
-                      <h3 className="font-medium text-sm text-white drop-shadow-md">{cat.name}</h3>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            /* Fallback icon grid when DB has no categories */
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {FALLBACK_CATEGORIES.map((cat) => (
-                <Link href={`/shop?category=${cat.slug}`} key={cat.id} className="group block">
-                  <div className={`aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${cat.bg} shadow-sm hover:shadow-xl transition-all duration-500`}>
-                    <div className="h-full flex flex-col items-center justify-center text-white p-4 gap-3">
-                      <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
-                        <i className={`${cat.icon} text-2xl text-white`} />
-                      </div>
-                      <div className="text-center">
-                        <h3 className="font-semibold text-base text-white">{cat.name}</h3>
-                        <p className="text-white/40 text-[9px] mt-0.5 font-medium tracking-widest uppercase">Explore</p>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-10 text-center md:hidden">
-            <Link href="/categories" className="inline-flex items-center gap-2 text-sm font-bold text-gray-900">
-              View All Categories <i className="ri-arrow-right-line" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-
-
-      {/* ══════════════════════════════════════════════════════════
-          6 · FEATURED PRODUCTS
-      ══════════════════════════════════════════════════════════ */}
-      <section className="pt-12 pb-14 lg:pb-16 bg-white">
+      <section className="pt-24 pb-14 lg:pb-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection className="text-center mb-14">
             <span className="text-gray-400 font-bold tracking-widest uppercase text-[10px] mb-3 block">Fresh in</span>
@@ -369,7 +297,7 @@ export default function Home() {
             </div>
           ) : featuredProducts.length > 0 ? (
             <AnimatedGrid className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 lg:gap-8">
-              {featuredProducts.map(buildCard)}
+              {[...featuredProducts].reverse().map(buildCard)}
             </AnimatedGrid>
           ) : (
             <div className="text-center py-20 border-2 border-dashed border-gray-100 rounded-3xl">
@@ -394,6 +322,76 @@ export default function Home() {
               </Link>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          5 · CATEGORIES
+      ══════════════════════════════════════════════════════════ */}
+      <section className="pt-12 pb-10 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <AnimatedSection className="flex items-end justify-between mb-14">
+            <div>
+              <span className="text-gray-400 font-bold tracking-widest uppercase text-[10px] mb-3 block">Collections</span>
+              <h2 className="font-serif text-4xl md:text-5xl text-gray-900 leading-tight">Shop by Category</h2>
+              <p className="text-gray-400 text-lg mt-3 max-w-md font-light">Genuine electronics, gadgets, and tech — sourced directly and priced honestly.</p>
+            </div>
+            <Link href="/categories" className="hidden md:flex items-center gap-2 text-sm font-bold text-gray-900 hover:text-primary hover:gap-3 transition-all">
+              View All <i className="ri-arrow-right-line" />
+            </Link>
+          </AnimatedSection>
+
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {Array(6).fill(0).map((_, i) => <div key={i} className="aspect-square rounded-2xl bg-gray-100 animate-pulse" />)}
+            </div>
+          ) : categories.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[...categories].reverse().map((cat) => (
+                <Link href={`/shop?category=${cat.slug}`} key={cat.id} className="group block">
+                  <div className="aspect-square rounded-2xl overflow-hidden relative shadow-sm hover:shadow-xl transition-all duration-500 bg-gray-100">
+                    <Image
+                      src={cat.image || cat.image_url || `https://via.placeholder.com/600x800?text=${encodeURIComponent(cat.name)}`}
+                      alt={cat.name}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 1024px) 33vw, 16vw"
+                      quality={85}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    <div className="absolute bottom-4 inset-x-0 px-3 text-center">
+                      <h3 className="font-medium text-sm text-white drop-shadow-md">{cat.name}</h3>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            /* Fallback icon grid when DB has no categories */
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[...FALLBACK_CATEGORIES].reverse().map((cat) => (
+                <Link href={`/shop?category=${cat.slug}`} key={cat.id} className="group block">
+                  <div className={`aspect-square rounded-2xl overflow-hidden bg-gradient-to-br ${cat.bg} shadow-sm hover:shadow-xl transition-all duration-500`}>
+                    <div className="h-full flex flex-col items-center justify-center text-white p-4 gap-3">
+                      <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center group-hover:bg-white/20 transition-colors">
+                        <i className={`${cat.icon} text-2xl text-white`} />
+                      </div>
+                      <div className="text-center">
+                        <h3 className="font-semibold text-base text-white">{cat.name}</h3>
+                        <p className="text-white/40 text-[9px] mt-0.5 font-medium tracking-widest uppercase">Explore</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-10 text-center md:hidden">
+            <Link href="/categories" className="inline-flex items-center gap-2 text-sm font-bold text-gray-900">
+              View All Categories <i className="ri-arrow-right-line" />
+            </Link>
+          </div>
         </div>
       </section>
 

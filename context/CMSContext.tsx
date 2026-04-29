@@ -191,7 +191,7 @@ export interface CMSContextType {
 export const defaultSettings: SiteSettings = {
     // General
     site_name: 'RNH Imports',
-    site_tagline: 'Premium Tech. Delivered Fresh.',
+    site_tagline: 'Quality yet Affordable',
     site_logo: '/logo.png',
     site_favicon: '/favicon.ico',
     contact_email: 'info@rnhimports.com',
@@ -217,7 +217,7 @@ export const defaultSettings: SiteSettings = {
     footer_text: '#FFFFFF',
 
     // Hero
-    hero_headline: 'Premium Tech.\nDelivered Fresh.',
+    hero_headline: 'Quality yet Affordable',
     hero_subheadline: 'The latest laptops, cameras, and gadgets \u2014 sourced globally and delivered straight to you in Ghana.',
     hero_image: '/hero.jpg',
     hero_video: '/hero-video.mp4',
@@ -253,11 +253,17 @@ export const defaultSettings: SiteSettings = {
     // About
     about_hero_title: 'Our Story',
     about_hero_subtitle: 'Ghana\u2019s trusted source for genuine electronics, imported directly and delivered to your door.',
-    about_story_title: 'About RNH Imports',
-    about_story_content: 'RNH Imports is a trusted importation and logistics company based in Accra, Ghana. We source quality electronics \u2014 laptops, phones, tablets, cameras, gaming consoles, and audio gear \u2014 directly from verified manufacturers in China, cutting out the middlemen so you get genuine products at fair prices.',
+    about_story_title: 'About Us — RNH Imports',
+    about_story_content:
+      'RNH Imports is a trusted importation and logistics company based in Ghana, committed to making global trade simple, reliable, and accessible for individuals and businesses.\n\n' +
+      'Founded with a vision to bridge the gap between international suppliers and the Ghanaian market, we specialize in sourcing high quality products from China and delivering them safely and efficiently to our clients in Ghana.\n\n' +
+      'At RNH Imports, we understand that importation can feel overwhelming, from finding the right suppliers to handling shipping, customs clearance, and delivery. That is why we provide a seamless, end to end solution that takes the stress off our clients and guarantees peace of mind.\n\n' +
+      'With a strong network of verified suppliers, efficient shipping systems, and a dedicated warehouse presence in Ghana, we ensure that every item entrusted to us is handled with care and delivered on time.\n\n' +
+      'Our company is built on trust, transparency, and reliability. Whether you are a small business owner, a growing brand, or an individual looking to import goods, RNH Imports is your dependable partner every step of the way.\n\n' +
+      'We do not just move goods, we build lasting relationships and help businesses grow through smart, efficient import solutions.',
     about_story_image: '/about.jpg',
-    about_founder_name: 'Randy',
-    about_founder_title: 'Founder, RNH Imports',
+    about_founder_name: 'Randy & Hannah',
+    about_founder_title: 'Co-Founders',
     about_mission1_title: 'Our Mission',
     about_mission1_content: 'To bridge Ghana to the world by providing genuine, affordable electronics sourced directly from manufacturers \u2014 with transparency, speed, and personal service at every step.',
     about_mission2_title: 'Our Promise',
@@ -276,7 +282,7 @@ export const defaultSettings: SiteSettings = {
     contact_team_json: '[]',
 
     // Header
-    header_logo_height: '36',
+    header_logo_height: '52',
     header_nav_links_json: JSON.stringify([
         { label: 'Shop', href: '/shop' },
         { label: 'Categories', href: '/categories' },

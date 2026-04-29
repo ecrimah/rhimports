@@ -231,7 +231,7 @@ function ShopContent() {
       </div>
 
       <AnimatedSection direction="up" className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-6">
           <div className="flex gap-8">
             <aside className={`${isFilterOpen ? 'fixed inset-0 z-50 bg-white overflow-y-auto' : 'hidden'} lg:block lg:w-64 lg:flex-shrink-0`}>
               <div className="lg:sticky lg:top-24">
@@ -408,16 +408,16 @@ function ShopContent() {
               </div>
 
               {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
                   {[...Array(6)].map((_, i) => (
-                    <div key={i} className="bg-gray-100 rounded-xl aspect-[4/5] animate-pulse"></div>
+                    <div key={i} className="bg-gray-100 rounded-lg sm:rounded-xl aspect-[4/5] animate-pulse" />
                   ))}
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" data-product-shop>
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 lg:gap-8" data-product-shop>
                     {products.map(product => (
-                      <ProductCard key={product.id} {...product} />
+                      <ProductCard key={product.id} {...product} density="compact" />
                     ))}
                   </div>
 
