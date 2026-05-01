@@ -199,7 +199,7 @@ export default function Home() {
           <div className="max-w-3xl mx-auto">
             <motion.p
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-              className="hidden md:inline-flex text-white/70 text-[10px] font-bold tracking-[0.3em] uppercase mb-6 items-center gap-2 px-4 py-1.5 border border-white/20 rounded-full backdrop-blur-sm"
+              className="hidden md:inline-flex text-white/70 text-[10px] font-bold tracking-[0.3em] uppercase mb-6 items-center gap-2 px-4 py-1.5 border border-white/20 rounded-full"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
               {heroTagText}
@@ -226,7 +226,7 @@ export default function Home() {
               <Link href={heroPrimaryLink} className="inline-flex items-center justify-center gap-2 bg-primary text-white px-8 py-4 rounded-full font-bold text-base hover:bg-[#0F1A47] transition-all hover:scale-105 shadow-xl">
                 {heroPrimaryText} <i className="ri-arrow-right-line text-lg" />
               </Link>
-              <Link href={heroSecondaryLink} className="inline-flex items-center justify-center gap-2 border border-white/30 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 px-8 py-4 rounded-full font-semibold text-base transition-all">
+              <Link href={heroSecondaryLink} className="inline-flex items-center justify-center gap-2 border border-white/30 bg-white/10 text-white hover:bg-white/20 px-8 py-4 rounded-full font-semibold text-base transition-all">
                 {heroSecondaryText}
               </Link>
 

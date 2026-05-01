@@ -573,6 +573,7 @@ export default function Header() {
                 { href: '/',           icon: 'ri-home-line',              label: 'Home' },
                 { href: '/shop',       icon: 'ri-store-line',             label: 'Shop' },
                 { href: '/categories', icon: 'ri-grid-line',              label: 'All Categories' },
+                { href: '/service',    icon: 'ri-tools-line',             label: 'Services' },
                 { href: '/about',      icon: 'ri-information-line',       label: 'About Us' },
                 { href: '/contact',    icon: 'ri-customer-service-line',  label: 'Contact' },
               ].map(({ href, icon, label }) => (

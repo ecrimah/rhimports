@@ -3,12 +3,12 @@
  * Operational photos in /images/home plus gallery picks for sourcing context.
  */
 const HOME_HERO_SLIDER = [
+  '/images/gallery/factory-meeting.png',
+  '/images/gallery/sourcing-partners.png',
   '/images/home/hero-slider-1-container-unloading.png',
   '/images/home/hero-slider-2-forklift.png',
   '/images/home/hero-slider-3-team-hq.png',
   '/images/gallery/container-load.png',
-  '/images/gallery/factory-meeting.png',
-  '/images/gallery/sourcing-partners.png',
 ] as const;
 
 export const HERO_SLIDES_HOME = [...HOME_HERO_SLIDER];
