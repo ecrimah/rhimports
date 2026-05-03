@@ -158,7 +158,7 @@ export default function Footer() {
 
         <div className="pt-5 border-t border-white/20 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-white/70">
           <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-            <p>© {new Date().getFullYear()} {siteName}. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} <Link href="/admin/login" className="hover:text-white transition-colors">{siteName}</Link>. All rights reserved.</p>
             <a
               href="https://doctorbarns.com/"
               target="_blank"
