@@ -62,9 +62,28 @@ export default function Footer() {
                 <span className="font-bold text-white text-xl tracking-wide">{siteName}</span>
               )}
             </Link>
-            <p className="text-white/80 text-sm leading-relaxed mb-3">
+            <p className="text-white/80 text-sm leading-relaxed mb-4">
               Ghana&apos;s trusted electronics import store. Laptops, tablets, phones, cameras &amp; more — sourced directly and delivered across Accra.
             </p>
+            <div className="flex items-center gap-3">
+              <a href="https://www.tiktok.com/@rnh_imports?_r=1&_t=ZS-9630ozhMI7s" target="_blank" rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                aria-label="TikTok">
+                <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/>
+                </svg>
+              </a>
+              <a href="https://www.facebook.com/share/18RRAceFtf/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                aria-label="Facebook">
+                <i className="ri-facebook-fill text-base" />
+              </a>
+              <a href="https://snapchat.com/t/5vsEpODX" target="_blank" rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                aria-label="Snapchat">
+                <i className="ri-snapchat-fill text-base" />
+              </a>
+            </div>
           </div>
 
           {/* Links Column */}
