@@ -37,22 +37,40 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
         return `${prefix}-${timestamp}-${random}`;
     };
 
-    // ── Default Product Option Groups (toggleable per product) ──────────
+    const PRESET_COLORS = [
+        { name: 'Black',  hex: '#000000' },
+        { name: 'White',  hex: '#FFFFFF' },
+        { name: 'Red',    hex: '#EF4444' },
+        { name: 'Blue',   hex: '#3B82F6' },
+        { name: 'Navy',   hex: '#1e3a8a' },
+        { name: 'Green',  hex: '#22C55E' },
+        { name: 'Yellow', hex: '#EAB308' },
+        { name: 'Pink',   hex: '#EC4899' },
+        { name: 'Purple', hex: '#A855F7' },
+        { name: 'Orange', hex: '#F97316' },
+        { name: 'Gray',   hex: '#6B7280' },
+        { name: 'Brown',  hex: '#92400E' },
+        { name: 'Beige',  hex: '#D4B896' },
+        { name: 'Maroon', hex: '#800000' },
+        { name: 'Teal',   hex: '#0D9488' },
+        { name: 'Cream',  hex: '#FFFDD0' },
+        { name: 'Gold',   hex: '#D4AF37' },
+        { name: 'Silver', hex: '#C0C0C0' },
+    ];
+    const PRESET_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
+
+    // ── Default Product Option Groups ──────────────────────────────────
     type OptionGroupDef = {
         key: string;
         label: string;
         type: 'values' | 'color';
         defaultValues: string[];
-        generatesVariants: boolean; // whether this option creates price/stock variants
+        generatesVariants: boolean;
     };
 
     const DEFAULT_OPTION_GROUPS: OptionGroupDef[] = [
         { key: 'color', label: 'Color', type: 'color', defaultValues: [], generatesVariants: false },
-        { key: 'lace_type', label: 'Lace Type', type: 'values', defaultValues: ['HD Lace', 'Transparent Lace'], generatesVariants: false },
-        { key: 'lace_length', label: 'Lace Length', type: 'values', defaultValues: ['2x6', '4x4', '5x5', '6x6', '7x7', '13x4', '13x6'], generatesVariants: false },
-        { key: 'length', label: 'Length', type: 'values', defaultValues: ['10"', '12"', '14"', '16"', '18"', '20"', '22"', '24"', '26"', '28"', '30"'], generatesVariants: true },
-        { key: 'wig_size', label: 'Size', type: 'values', defaultValues: ['Small', 'Medium', 'Large', 'Extra Large'], generatesVariants: false },
-        { key: 'density', label: 'Density', type: 'values', defaultValues: ['250', '300', '350'], generatesVariants: false },
+        { key: 'size',  label: 'Size',  type: 'values', defaultValues: [], generatesVariants: true },
     ];
 
     // State: which option groups are enabled + their current values
@@ -136,6 +154,27 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             return { ...prev, color: { ...g, values: [...g.values, colorVal] } };
         });
         setColorPickerName('');
+    };
+
+    const togglePresetColor = (name: string, hex: string) => {
+        const existing = optionGroupStates['color']?.values.find(v => v.startsWith(name + '|'));
+        if (existing) {
+            const newVals = optionGroupStates['color'].values.filter(v => !v.startsWith(name + '|'));
+            setOptionGroupStates(prev => ({ ...prev, color: { ...prev['color'], values: newVals, enabled: newVals.length > 0 } }));
+        } else {
+            setOptionGroupStates(prev => ({ ...prev, color: { ...prev['color'], values: [...prev['color'].values, `${name}|${hex}`], enabled: true } }));
+        }
+    };
+
+    const togglePresetSize = (size: string) => {
+        const grp = optionGroupStates['size'];
+        if (!grp) return;
+        if (grp.values.includes(size)) {
+            const newVals = grp.values.filter(v => v !== size);
+            setOptionGroupStates(prev => ({ ...prev, size: { ...prev['size'], values: newVals, enabled: newVals.length > 0 } }));
+        } else {
+            setOptionGroupStates(prev => ({ ...prev, size: { ...prev['size'], values: [...prev['size'].values, size], enabled: true } }));
+        }
     };
 
     const resetGroupToDefaults = (key: string) => {
@@ -748,209 +787,132 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                     )}
 
                     {activeTab === 'variants' && (
-                        <div className="space-y-8">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900">Product Options</h3>
-                                <p className="text-gray-600 mt-1">Toggle which option groups apply to this product. Options marked with ⚡ generate price/stock variants.</p>
-                            </div>
+                        <div className="space-y-6 max-w-3xl">
 
-                            {/* Default option groups — toggle cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {DEFAULT_OPTION_GROUPS.map(def => {
-                                    const state = optionGroupStates[def.key];
-                                    if (!state) return null;
-                                    const isColor = def.type === 'color';
-                                    return (
-                                        <div key={def.key} className={`rounded-xl border-2 transition-all ${state.enabled ? 'border-gray-900 bg-white shadow-sm' : 'border-gray-200 bg-gray-50 opacity-70'}`}>
-                                            {/* Toggle header */}
-                                            <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                                                <label className="flex items-center gap-3 cursor-pointer flex-1">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={state.enabled}
-                                                        onChange={() => toggleOptionGroup(def.key)}
-                                                        className="w-5 h-5 text-gray-900 border-gray-300 rounded cursor-pointer"
-                                                    />
-                                                    <span className="font-bold text-gray-900">{def.label}</span>
-                                                    {state.enabled && state.generatesVariants && (
-                                                        <span className="text-xs font-medium bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">⚡ Variants</span>
-                                                    )}
-                                                </label>
-                                                {state.enabled && (
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={() => toggleGeneratesVariants(def.key)}
-                                                            className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${state.generatesVariants ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-white border-gray-200 text-gray-500 hover:border-gray-400'}`}
-                                                            title="Toggle whether this option affects price/stock"
-                                                        >
-                                                            {state.generatesVariants ? '⚡ Variant' : 'Selection only'}
-                                                        </button>
-                                                        {!isColor && (
-                                                            <button
-                                                                onClick={() => resetGroupToDefaults(def.key)}
-                                                                className="text-xs text-gray-400 hover:text-gray-700 px-2 py-1"
-                                                                title="Reset to defaults"
-                                                            >
-                                                                <i className="ri-refresh-line"></i>
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Expanded content when enabled */}
-                                            {state.enabled && (
-                                                <div className="p-4 space-y-3">
-                                                    {/* Values chips */}
-                                                    {state.values.length > 0 && (
-                                                        <div className="flex flex-wrap gap-2">
-                                                            {state.values.map(val => {
-                                                                if (isColor) {
-                                                                    const [name, hex] = val.split('|');
-                                                                    return (
-                                                                        <span key={val} className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm font-medium shadow-sm">
-                                                                            <span className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0" style={{ backgroundColor: hex || '#000' }} />
-                                                                            {name}
-                                                                            <button onClick={() => removeValueFromGroup('color', val)} className="text-gray-400 hover:text-red-500">
-                                                                                <i className="ri-close-line text-sm"></i>
-                                                                            </button>
-                                                                        </span>
-                                                                    );
-                                                                }
-                                                                return (
-                                                                    <span key={val} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm font-medium shadow-sm">
-                                                                        {val}
-                                                                        <button onClick={() => removeValueFromGroup(def.key, val)} className="text-gray-400 hover:text-red-500">
-                                                                            <i className="ri-close-line text-sm"></i>
-                                                                        </button>
-                                                                    </span>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    )}
-
-                                                    {/* Add value input */}
-                                                    {isColor ? (
-                                                        <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                                                            <input
-                                                                type="color"
-                                                                value={colorPickerHex}
-                                                                onChange={e => setColorPickerHex(e.target.value)}
-                                                                className="w-10 h-10 rounded-lg border-2 border-gray-200 cursor-pointer p-0.5"
-                                                            />
-                                                            <input
-                                                                type="text"
-                                                                value={colorPickerName}
-                                                                onChange={e => setColorPickerName(e.target.value)}
-                                                                placeholder="Color name (e.g. Jet Black)"
-                                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                                onKeyDown={e => e.key === 'Enter' && addColorValue()}
-                                                            />
-                                                            <button
-                                                                onClick={addColorValue}
-                                                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary transition-colors"
-                                                            >
-                                                                Add
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                                                            <input
-                                                                type="text"
-                                                                value={customOptionInput[def.key] || ''}
-                                                                onChange={e => setCustomOptionInput(prev => ({ ...prev, [def.key]: e.target.value }))}
-                                                                placeholder={`Add ${def.label.toLowerCase()} value...`}
-                                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                                onKeyDown={e => e.key === 'Enter' && addValueToGroup(def.key, customOptionInput[def.key] || '')}
-                                                            />
-                                                            <button
-                                                                onClick={() => addValueToGroup(def.key, customOptionInput[def.key] || '')}
-                                                                disabled={!(customOptionInput[def.key] || '').trim()}
-                                                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                                                            >
-                                                                Add
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Custom option groups for other products */}
-                            <div className="border-t border-gray-200 pt-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div>
-                                        <h4 className="font-bold text-gray-900">Custom Option Groups</h4>
-                                        <p className="text-sm text-gray-500">Add custom options for other products (e.g. Size, Material, Scent)</p>
-                                    </div>
+                            {/* Step 1 — Colors */}
+                            <div className="border border-gray-200 rounded-xl p-6">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <i className="ri-palette-line text-primary text-lg"></i>
+                                    <h3 className="font-bold text-gray-900">Step 1: Select Colors</h3>
                                 </div>
-                                <div className="flex items-center gap-2 mb-4">
+                                <p className="text-sm text-gray-500 mb-5">Click colors to add/remove. Skip if product has no color options.</p>
+
+                                <div className="flex flex-wrap gap-2 mb-5">
+                                    {PRESET_COLORS.map(({ name, hex }) => {
+                                        const selected = optionGroupStates['color']?.values.some(v => v.startsWith(name + '|'));
+                                        return (
+                                            <button
+                                                key={name}
+                                                type="button"
+                                                onClick={() => togglePresetColor(name, hex)}
+                                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 text-sm font-medium transition-all cursor-pointer ${selected ? 'border-gray-900 bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-400'}`}
+                                            >
+                                                <span className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0" style={{ backgroundColor: hex }} />
+                                                <span className="text-gray-700">{name}</span>
+                                                {selected && <i className="ri-check-line text-xs text-gray-700"></i>}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Custom color */}
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="color"
+                                        value={colorPickerHex}
+                                        onChange={e => setColorPickerHex(e.target.value)}
+                                        className="w-10 h-10 rounded-lg border-2 border-gray-300 cursor-pointer p-0.5 flex-shrink-0"
+                                    />
                                     <input
                                         type="text"
-                                        value={customGroupInput}
-                                        onChange={e => setCustomGroupInput(e.target.value)}
-                                        placeholder="Option group name (e.g. Size, Material)"
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                        onKeyDown={e => e.key === 'Enter' && addCustomGroup()}
+                                        value={colorPickerName}
+                                        onChange={e => setColorPickerName(e.target.value)}
+                                        onKeyDown={e => e.key === 'Enter' && addColorValue()}
+                                        placeholder="Custom color name"
+                                        className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-600 focus:border-gray-600"
                                     />
                                     <button
-                                        onClick={addCustomGroup}
-                                        disabled={!customGroupInput.trim()}
-                                        className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                        type="button"
+                                        onClick={addColorValue}
+                                        className="px-4 py-2.5 bg-gray-700 hover:bg-primary text-white rounded-lg text-sm font-semibold transition-colors whitespace-nowrap cursor-pointer"
                                     >
-                                        <i className="ri-add-line mr-1"></i> Add
+                                        Add Color
                                     </button>
                                 </div>
-                                {customGroups.map((g, idx) => (
-                                    <div key={idx} className="bg-gray-50 rounded-xl p-4 border border-gray-200 mb-3">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <span className="font-semibold text-gray-900">{g.name}</span>
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() => setCustomGroups(prev => prev.map((cg, i) => i === idx ? { ...cg, generatesVariants: !cg.generatesVariants } : cg))}
-                                                    className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${g.generatesVariants ? 'bg-purple-100 border-purple-300 text-purple-700' : 'bg-white border-gray-200 text-gray-500'}`}
-                                                >
-                                                    {g.generatesVariants ? '⚡ Variant' : 'Selection only'}
-                                                </button>
-                                                <button onClick={() => removeCustomGroup(idx)} className="text-gray-400 hover:text-red-500">
-                                                    <i className="ri-delete-bin-line"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        {g.values.length > 0 && (
-                                            <div className="flex flex-wrap gap-2 mb-3">
-                                                {g.values.map(val => (
-                                                    <span key={val} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm font-medium shadow-sm">
-                                                        {val}
-                                                        <button onClick={() => removeCustomGroupValue(idx, val)} className="text-gray-400 hover:text-red-500">
-                                                            <i className="ri-close-line text-sm"></i>
-                                                        </button>
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                value={customOptionInput[`custom_${idx}`] || ''}
-                                                onChange={e => setCustomOptionInput(prev => ({ ...prev, [`custom_${idx}`]: e.target.value }))}
-                                                placeholder={`Add ${g.name.toLowerCase()} value...`}
-                                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                                onKeyDown={e => e.key === 'Enter' && addCustomGroupValue(idx, customOptionInput[`custom_${idx}`] || '')}
-                                            />
-                                            <button
-                                                onClick={() => addCustomGroupValue(idx, customOptionInput[`custom_${idx}`] || '')}
-                                                disabled={!(customOptionInput[`custom_${idx}`] || '').trim()}
-                                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                                            >
-                                                Add
-                                            </button>
-                                        </div>
+
+                                {(optionGroupStates['color']?.values.length ?? 0) > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
+                                        {optionGroupStates['color'].values.map(val => {
+                                            const [name, hex] = val.split('|');
+                                            return (
+                                                <span key={val} className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm font-medium shadow-sm">
+                                                    <span className="w-3.5 h-3.5 rounded-full border border-gray-300" style={{ backgroundColor: hex || '#000' }} />
+                                                    {name}
+                                                    <button type="button" onClick={() => removeValueFromGroup('color', val)} className="text-gray-400 hover:text-red-500 ml-1">
+                                                        <i className="ri-close-line text-xs"></i>
+                                                    </button>
+                                                </span>
+                                            );
+                                        })}
                                     </div>
-                                ))}
+                                )}
+                            </div>
+
+                            {/* Step 2 — Sizes */}
+                            <div className="border border-gray-200 rounded-xl p-6">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <i className="ri-ruler-line text-primary text-lg"></i>
+                                    <h3 className="font-bold text-gray-900">Step 2: Select Sizes</h3>
+                                </div>
+                                <p className="text-sm text-gray-500 mb-5">Click sizes to add/remove. Use custom for volumes (100ml), weights, etc.</p>
+
+                                <div className="flex flex-wrap gap-2 mb-5">
+                                    {PRESET_SIZES.map(size => {
+                                        const selected = optionGroupStates['size']?.values.includes(size);
+                                        return (
+                                            <button
+                                                key={size}
+                                                type="button"
+                                                onClick={() => togglePresetSize(size)}
+                                                className={`px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all cursor-pointer ${selected ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
+                                            >
+                                                {size}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Custom size */}
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={customOptionInput['size'] || ''}
+                                        onChange={e => setCustomOptionInput(prev => ({ ...prev, size: e.target.value }))}
+                                        onKeyDown={e => e.key === 'Enter' && addValueToGroup('size', customOptionInput['size'] || '')}
+                                        placeholder="Custom size (e.g. 100ml, One Size, 42)"
+                                        className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-600 focus:border-gray-600"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => addValueToGroup('size', customOptionInput['size'] || '')}
+                                        className="px-4 py-2.5 bg-gray-700 hover:bg-primary text-white rounded-lg text-sm font-semibold transition-colors whitespace-nowrap cursor-pointer"
+                                    >
+                                        Add Size
+                                    </button>
+                                </div>
+
+                                {(optionGroupStates['size']?.values.filter(v => !PRESET_SIZES.includes(v)).length ?? 0) > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
+                                        {optionGroupStates['size'].values.filter(v => !PRESET_SIZES.includes(v)).map(val => (
+                                            <span key={val} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm font-medium shadow-sm">
+                                                {val}
+                                                <button type="button" onClick={() => removeValueFromGroup('size', val)} className="text-gray-400 hover:text-red-500">
+                                                    <i className="ri-close-line text-xs"></i>
+                                                </button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Variant Price/Stock Grid */}
@@ -1033,12 +995,11 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                 </div>
                             )}
 
-                            {variantCombinations.length === 0 && activeGroups.length === 0 && (
-                                <div className="p-8 text-center text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                            {variantCombinations.length === 0 && (
+                                <div className="p-6 text-center text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
                                     <i className="ri-list-settings-line text-4xl text-gray-300 mb-3 block"></i>
-                                    <p className="font-semibold text-gray-700">No variant-generating options enabled</p>
-                                    <p className="text-sm mt-1">Toggle on option groups above and mark them as ⚡ Variant to generate price/stock combinations.</p>
-                                    <p className="text-xs mt-2 text-gray-400">Options set to &quot;Selection only&quot; will appear on the product page as selectors but won&apos;t create individual variants.</p>
+                                    <p className="font-semibold text-gray-700">No size variants yet</p>
+                                    <p className="text-sm mt-1 text-gray-400">Select sizes above to generate a price &amp; stock table per size. Colors are selection-only and won&apos;t generate separate variants.</p>
                                 </div>
                             )}
                         </div>
