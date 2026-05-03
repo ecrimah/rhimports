@@ -54,7 +54,7 @@ export default function CheckoutPage() {
     'Western North',
   ];
 
-  const [deliveryMethod, setDeliveryMethod] = useState('pickup');
+  const [deliveryMethod, setDeliveryMethod] = useState('doorstep');
   const [paymentMethod] = useState<'moolre'>('moolre');
   const [errors, setErrors] = useState<any>({});
 
@@ -531,25 +531,6 @@ export default function CheckoutPage() {
                 <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Delivery Method</h2>
                   <div className="space-y-4">
-                    <label className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-colors ${deliveryMethod === 'pickup' ? 'border-gray-900 bg-gray-50' : 'border-gray-300 hover:border-gray-400'
-                      }`}>
-                      <div className="flex items-center space-x-4">
-                        <input
-                          type="radio"
-                          name="delivery"
-                          value="pickup"
-                          checked={deliveryMethod === 'pickup'}
-                          onChange={(e) => setDeliveryMethod(e.target.value)}
-                          className="w-5 h-5 text-gray-900"
-                        />
-                        <div>
-                          <p className="font-semibold text-gray-900">Store Pickup</p>
-                          <p className="text-sm text-gray-600">Pick up from our store — Ready in 24 hours</p>
-                        </div>
-                      </div>
-                      <p className="font-bold text-gray-900">FREE</p>
-                    </label>
-
                     <label className={`flex items-center justify-between p-4 border-2 rounded-lg cursor-pointer transition-colors ${deliveryMethod === 'doorstep' ? 'border-gray-900 bg-gray-50' : 'border-gray-300 hover:border-gray-400'
                       }`}>
                       <div className="flex items-center space-x-4">
