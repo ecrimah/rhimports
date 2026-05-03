@@ -16,11 +16,57 @@ export default function ProductEditor({ productId }: { productId: string }) {
   const [featured, setFeatured] = useState(true);
   const [activeTab, setActiveTab] = useState('general');
 
-  const variants = [
-    { id: 1, name: 'Forest Green', sku: 'LCB-FG-001', price: 289.00, stock: 15 },
-    { id: 2, name: 'Charcoal Black', sku: 'LCB-CB-002', price: 289.00, stock: 8 },
-    { id: 3, name: 'Cognac Brown', sku: 'LCB-CG-003', price: 299.00, stock: 12 }
+  const PRESET_COLORS = [
+    { name: 'Black',  hex: '#000000' },
+    { name: 'White',  hex: '#FFFFFF' },
+    { name: 'Red',    hex: '#EF4444' },
+    { name: 'Blue',   hex: '#3B82F6' },
+    { name: 'Navy',   hex: '#1e3a8a' },
+    { name: 'Green',  hex: '#22C55E' },
+    { name: 'Yellow', hex: '#EAB308' },
+    { name: 'Pink',   hex: '#EC4899' },
+    { name: 'Purple', hex: '#A855F7' },
+    { name: 'Orange', hex: '#F97316' },
+    { name: 'Gray',   hex: '#6B7280' },
+    { name: 'Brown',  hex: '#92400E' },
+    { name: 'Beige',  hex: '#D4B896' },
+    { name: 'Maroon', hex: '#800000' },
+    { name: 'Teal',   hex: '#0D9488' },
+    { name: 'Cream',  hex: '#FFFDD0' },
+    { name: 'Gold',   hex: '#D4AF37' },
+    { name: 'Silver', hex: '#C0C0C0' },
   ];
+  const PRESET_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
+
+  const [selectedColors, setSelectedColors] = useState<Set<string>>(new Set());
+  const [customColors, setCustomColors] = useState<{ name: string; hex: string }[]>([]);
+  const [customColorName, setCustomColorName] = useState('');
+  const [customColorHex, setCustomColorHex] = useState('#808080');
+
+  const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
+  const [customSize, setCustomSize] = useState('');
+
+  const toggleColor = (name: string) =>
+    setSelectedColors(prev => { const n = new Set(prev); n.has(name) ? n.delete(name) : n.add(name); return n; });
+
+  const addCustomColor = () => {
+    const name = customColorName.trim();
+    if (!name) return;
+    setCustomColors(prev => [...prev, { name, hex: customColorHex }]);
+    setSelectedColors(prev => new Set(prev).add(name));
+    setCustomColorName('');
+    setCustomColorHex('#808080');
+  };
+
+  const toggleSize = (size: string) =>
+    setSelectedSizes(prev => { const n = new Set(prev); n.has(size) ? n.delete(size) : n.add(size); return n; });
+
+  const addCustomSize = () => {
+    const s = customSize.trim();
+    if (!s) return;
+    setSelectedSizes(prev => new Set(prev).add(s));
+    setCustomSize('');
+  };
 
   const images = [
     'https://placehold.co/400x400?text=Image',
@@ -259,71 +305,120 @@ export default function ProductEditor({ productId }: { productId: string }) {
           )}
 
           {activeTab === 'variants' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Product Variants</h3>
-                  <p className="text-gray-600 mt-1">Manage different versions of this product</p>
+            <div className="space-y-8 max-w-3xl">
+
+              {/* Step 1 — Colors */}
+              <div className="border border-gray-200 rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <i className="ri-palette-line text-primary text-lg" />
+                  <h3 className="font-bold text-gray-900">Step 1: Select Colors</h3>
                 </div>
-                <button className="px-4 py-2 bg-gray-700 hover:bg-primary text-white rounded-lg font-semibold transition-colors whitespace-nowrap cursor-pointer">
-                  <i className="ri-add-line mr-2"></i>
-                  Add Variant
-                </button>
+                <p className="text-sm text-gray-500 mb-5">Click colors to add/remove. Skip if product has no color options.</p>
+
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {[...PRESET_COLORS, ...customColors].map(({ name, hex }) => {
+                    const selected = selectedColors.has(name);
+                    const isLight = ['White', 'Cream', 'Yellow', 'Beige', 'Silver', 'Gold'].includes(name);
+                    return (
+                      <button
+                        key={name}
+                        onClick={() => toggleColor(name)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 text-sm font-medium transition-all cursor-pointer ${
+                          selected ? 'border-gray-700 bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-400'
+                        }`}
+                      >
+                        <span
+                          className="w-4 h-4 rounded-full border border-gray-300 flex-shrink-0"
+                          style={{ backgroundColor: hex }}
+                        />
+                        <span className="text-gray-700">{name}</span>
+                        {selected && <i className="ri-check-line text-xs text-gray-700" />}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Custom color */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={customColorHex}
+                    onChange={e => setCustomColorHex(e.target.value)}
+                    className="w-10 h-10 rounded-lg border-2 border-gray-300 cursor-pointer p-0.5"
+                  />
+                  <input
+                    type="text"
+                    value={customColorName}
+                    onChange={e => setCustomColorName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addCustomColor()}
+                    placeholder="Custom color name"
+                    className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                  />
+                  <button
+                    onClick={addCustomColor}
+                    className="px-4 py-2.5 bg-gray-700 hover:bg-primary text-white rounded-lg text-sm font-semibold transition-colors whitespace-nowrap cursor-pointer"
+                  >
+                    Add Color
+                  </button>
+                </div>
+
+                {selectedColors.size > 0 && (
+                  <p className="text-xs text-gray-400 mt-3">
+                    Selected: {Array.from(selectedColors).join(', ')}
+                  </p>
+                )}
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Variant Name</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">SKU</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Price</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Stock</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {variants.map((variant) => (
-                      <tr key={variant.id} className="border-b border-gray-100">
-                        <td className="py-4 px-4">
-                          <input
-                            type="text"
-                            defaultValue={variant.name}
-                            className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm"
-                          />
-                        </td>
-                        <td className="py-4 px-4">
-                          <input
-                            type="text"
-                            defaultValue={variant.sku}
-                            className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm font-mono"
-                          />
-                        </td>
-                        <td className="py-4 px-4">
-                          <input
-                            type="number"
-                            defaultValue={variant.price}
-                            className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm"
-                            step="0.01"
-                          />
-                        </td>
-                        <td className="py-4 px-4">
-                          <input
-                            type="number"
-                            defaultValue={variant.stock}
-                            className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm"
-                          />
-                        </td>
-                        <td className="py-4 px-4">
-                          <button className="w-8 h-8 flex items-center justify-center text-gray-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
-                            <i className="ri-delete-bin-line text-lg"></i>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Step 2 — Sizes */}
+              <div className="border border-gray-200 rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <i className="ri-ruler-line text-primary text-lg" />
+                  <h3 className="font-bold text-gray-900">Step 2: Select Sizes</h3>
+                </div>
+                <p className="text-sm text-gray-500 mb-5">Click sizes to add/remove. Use custom for volumes (100ml), weights, etc.</p>
+
+                <div className="flex flex-wrap gap-2 mb-5">
+                  {PRESET_SIZES.map(size => {
+                    const selected = selectedSizes.has(size);
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => toggleSize(size)}
+                        className={`px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all cursor-pointer ${
+                          selected ? 'border-gray-700 bg-gray-700 text-white' : 'border-gray-200 text-gray-700 hover:border-gray-400'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Custom size */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={customSize}
+                    onChange={e => setCustomSize(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addCustomSize()}
+                    placeholder="Custom size (e.g. 100ml, One Size, 42)"
+                    className="flex-1 px-4 py-2.5 border-2 border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
+                  />
+                  <button
+                    onClick={addCustomSize}
+                    className="px-4 py-2.5 bg-gray-700 hover:bg-primary text-white rounded-lg text-sm font-semibold transition-colors whitespace-nowrap cursor-pointer"
+                  >
+                    Add Size
+                  </button>
+                </div>
+
+                {selectedSizes.size > 0 && (
+                  <p className="text-xs text-gray-400 mt-3">
+                    Selected: {Array.from(selectedSizes).join(', ')}
+                  </p>
+                )}
               </div>
+
             </div>
           )}
 
