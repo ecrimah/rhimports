@@ -255,14 +255,16 @@ export async function sendOrderConfirmation(order: any) {
 
     console.log(`[Notification] Preparing for Order #${order_number} | Phone: ${phone ? 'Present' : 'Missing'} | Tracking: ${trackingNumber || 'None'}`);
 
-    // Fetch order items to get preorder_shipping info
+    // Fetch order items (used for product list in admin email + shipping notes)
     let shippingNotes: string[] = [];
+    let orderItems: any[] = [];
     try {
         const { data: items } = await supabase
             .from('order_items')
-            .select('product_name, metadata')
+            .select('product_name, variant_name, quantity, unit_price, total_price, metadata')
             .eq('order_id', id);
         if (items) {
+            orderItems = items;
             for (const item of items) {
                 const preorder = item.metadata?.preorder_shipping;
                 if (preorder) {
@@ -310,6 +312,38 @@ ${emailButton('Track Your Order', trackingUrl)}
     });
 
     // 2. Email to Admin
+    const adminItemsHtml = orderItems.length > 0 ? `
+<h3 style="margin:24px 0 12px;color:#111827;font-size:16px;font-weight:700;">Items Ordered (${orderItems.length})</h3>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
+  <tr style="background-color:#f3f4f6;">
+    <td style="padding:10px 14px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;" colspan="2">Product</td>
+    <td style="padding:10px 14px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;text-align:center;">Qty</td>
+    <td style="padding:10px 14px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;text-align:right;">Price</td>
+  </tr>
+  ${orderItems.map((item: any) => {
+    const rawImg: string = item.metadata?.image || '';
+    const imgSrc = rawImg
+        ? (rawImg.startsWith('http') ? rawImg : `${baseUrl}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`)
+        : '';
+    const variantLabel = item.variant_name ? `<br><span style="color:#9ca3af;font-size:11px;">${item.variant_name}</span>` : '';
+    const imgCell = imgSrc
+        ? `<img src="${imgSrc}" width="52" height="52" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;display:block;">`
+        : `<div style="width:52px;height:52px;background-color:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;">&#128247;</div>`;
+    return `<tr style="border-top:1px solid #e5e7eb;">
+      <td style="padding:12px 10px 12px 14px;width:64px;vertical-align:top;">${imgCell}</td>
+      <td style="padding:12px 4px;vertical-align:middle;">
+        <span style="color:#111827;font-size:13px;font-weight:600;">${item.product_name}</span>${variantLabel}
+      </td>
+      <td style="padding:12px 14px;text-align:center;vertical-align:middle;color:#374151;font-size:14px;font-weight:600;">×${item.quantity}</td>
+      <td style="padding:12px 14px;text-align:right;vertical-align:middle;color:#111827;font-size:14px;font-weight:700;white-space:nowrap;">GH₵${Number(item.total_price).toFixed(2)}</td>
+    </tr>`;
+  }).join('')}
+  <tr style="background-color:#f9fafb;border-top:2px solid #e5e7eb;">
+    <td colspan="3" style="padding:12px 14px;font-size:14px;font-weight:700;color:#374151;text-align:right;">Order Total</td>
+    <td style="padding:12px 14px;font-size:16px;font-weight:800;color:${BRAND.color};text-align:right;white-space:nowrap;">GH₵${Number(total).toFixed(2)}</td>
+  </tr>
+</table>` : '';
+
     const adminEmailHtml = emailLayout(`
 <h2 style="margin:0 0 16px;color:#111827;font-size:20px;">&#128230; New Order Received</h2>
 
@@ -318,9 +352,10 @@ ${emailButton('Track Your Order', trackingUrl)}
   ${emailInfoRow('Customer', `${name}`)}
   ${emailInfoRow('Email', email)}
   ${emailInfoRow('Phone', emailPhoneCell(phone))}
-  ${emailInfoRow('Total', `GH₵${Number(total).toFixed(2)}`)}
   ${trackingNumber ? emailInfoRow('Tracking', trackingNumber) : ''}
 </table>
+
+${adminItemsHtml}
 
 ${emailShippingNotes(shippingNotes)}
 
