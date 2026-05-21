@@ -11,6 +11,13 @@ import { StructuredData, generateProductSchema, generateBreadcrumbSchema } from 
 import { notFound } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import {
+  getStoredOptionLabel,
+  findMatchingVariant,
+  allVariantOptionsSelected,
+  type StoredProductOption,
+  type CustomOptionGroup,
+} from '@/lib/product-options';
 
 // Map common color names to hex values for the swatch preview
 function colorNameToHex(name: string): string {
@@ -182,34 +189,30 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const hasVariants = product?.variants?.length > 0;
   const optionNames: string[] = product?.metadata?.option_names || [];
 
-  // Build all selectable option groups from metadata
-  const productOptions: Record<string, { values: string[]; generatesVariants?: boolean }> = product?.metadata?.product_options || {};
-  const customOptionGroups: { name: string; values: string[]; generatesVariants?: boolean }[] = product?.metadata?.custom_option_groups || [];
+  // Build all selectable option groups from metadata. Labels come from the
+  // shared resolver so the admin form and this page can never disagree.
+  const productOptions: Record<string, StoredProductOption> = product?.metadata?.product_options || {};
+  const customOptionGroups: CustomOptionGroup[] = product?.metadata?.custom_option_groups || [];
 
-  // All option labels for display (variant-generating come from optionNames, selection-only from metadata)
   const allOptionLabels: { name: string; values: string[]; isColor: boolean; generatesVariants: boolean }[] = [];
 
-  // Map of default key -> label
-  const defaultKeyToLabel: Record<string, string> = {
-    color: 'Color', lace_type: 'Lace Type', lace_length: 'Lace Length',
-    length: 'Length', wig_size: 'Size', density: 'Density',
-  };
-
-  // Add from product_options (default groups stored by key)
   Object.entries(productOptions).forEach(([key, opt]) => {
-    const label = defaultKeyToLabel[key] || key;
     allOptionLabels.push({
-      name: label,
+      name: getStoredOptionLabel(key, opt),
       values: opt.values || [],
       isColor: key === 'color',
       generatesVariants: opt.generatesVariants ?? false,
     });
   });
 
-  // Add custom option groups
   customOptionGroups.forEach(g => {
     if (!allOptionLabels.some(o => o.name === g.name)) {
-      allOptionLabels.push({ name: g.name, values: g.values, isColor: false, generatesVariants: g.generatesVariants ?? false });
+      allOptionLabels.push({
+        name: g.name,
+        values: g.values,
+        isColor: false,
+        generatesVariants: g.generatesVariants ?? false,
+      });
     }
   });
 
@@ -222,17 +225,11 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
   const handleOptionSelect = (optName: string, val: string) => {
     const newOpts = { ...selectedOptions, [optName]: val };
     setSelectedOptions(newOpts);
-    // Auto-find matching variant when all variant-generating options are selected
-    if (optionNames.length > 0) {
-      const allVarSelected = optionNames.every(n => newOpts[n]);
-      if (allVarSelected && product?.variants) {
-        const match = product.variants.find((v: any) =>
-          optionNames.every((n: string, idx: number) => v[`option${idx + 1}`] === newOpts[n])
-        );
-        setSelectedVariant(match || null);
-      } else {
-        setSelectedVariant(null);
-      }
+    if (optionNames.length === 0 || !product?.variants) return;
+    if (allVariantOptionsSelected(newOpts, optionNames)) {
+      setSelectedVariant(findMatchingVariant(product.variants, newOpts, optionNames));
+    } else {
+      setSelectedVariant(null);
     }
   };
 

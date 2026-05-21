@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { DEFAULT_OPTION_GROUPS } from '@/lib/product-options';
 
 interface ProductFormProps {
     initialData?: any;
@@ -59,19 +60,8 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
     ];
     const PRESET_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
 
-    // ── Default Product Option Groups ──────────────────────────────────
-    type OptionGroupDef = {
-        key: string;
-        label: string;
-        type: 'values' | 'color';
-        defaultValues: string[];
-        generatesVariants: boolean;
-    };
-
-    const DEFAULT_OPTION_GROUPS: OptionGroupDef[] = [
-        { key: 'color', label: 'Color', type: 'color', defaultValues: [], generatesVariants: false },
-        { key: 'size',  label: 'Size',  type: 'values', defaultValues: [], generatesVariants: true },
-    ];
+    // Option group definitions live in `lib/product-options.ts` so the admin
+    // form and the customer-facing product page always agree on keys/labels.
 
     // State: which option groups are enabled + their current values
     type OptionGroupState = {
@@ -391,6 +381,10 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                     option_names: activeGroups.map((g, i) => g.name || `Option ${i + 1}`),
                     product_options: Object.fromEntries(
                         enabledDefaults.map(d => [d.key, {
+                            // Persist the label alongside the values so the
+                            // customer page doesn't have to look it up from
+                            // a parallel map. See lib/product-options.ts.
+                            label: d.label,
                             values: optionGroupStates[d.key].values,
                             generatesVariants: optionGroupStates[d.key].generatesVariants,
                         }])
