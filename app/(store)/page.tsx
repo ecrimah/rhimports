@@ -66,7 +66,7 @@ export default function Home() {
           supabase.from('products')
             .select('*, product_variants(*), product_images(*)')
             .eq('status', 'active').eq('featured', true)
-            .order('created_at', { ascending: false }).limit(10),
+            .order('created_at', { ascending: false }).limit(100),
           supabase.from('categories')
             .select('id, name, slug, image_url, metadata')
             .eq('status', 'active').order('name'),
