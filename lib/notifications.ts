@@ -73,19 +73,95 @@ function emailInfoRow(label: string, value: string): string {
 }
 
 /** Parse shipping_address if the client/API ever returns it as a JSON string. */
-function shippingAddressObj(order: { shipping_address?: unknown }): { phone?: string } | null {
+function shippingAddressObj(order: { shipping_address?: unknown }): Record<string, any> | null {
     const sa = order.shipping_address;
     if (!sa) return null;
-    if (typeof sa === 'object' && sa !== null) return sa as { phone?: string };
+    if (typeof sa === 'object' && sa !== null) return sa as Record<string, any>;
     if (typeof sa === 'string') {
         try {
-            const parsed = JSON.parse(sa) as { phone?: string };
+            const parsed = JSON.parse(sa);
             return typeof parsed === 'object' && parsed !== null ? parsed : null;
         } catch {
             return null;
         }
     }
     return null;
+}
+
+/** Map an internal shipping_method code to a customer-friendly label. */
+function deliveryMethodLabel(method?: string | null): string {
+    if (!method) return 'Not specified';
+    const key = String(method).toLowerCase().trim();
+    const MAP: Record<string, string> = {
+        doorstep: 'Doorstep Delivery',
+        accra: 'Local Delivery (Accra)',
+        'outside-accra': 'Regional Delivery (Outside Accra)',
+        pickup: 'Store Pickup',
+        'store-pickup': 'Store Pickup',
+    };
+    if (MAP[key]) return MAP[key];
+    // Fallback: "some-method" → "Some Method"
+    return key.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+/** Escape a string for safe HTML interpolation. */
+function escapeHtml(value: unknown): string {
+    if (value === null || value === undefined) return '';
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/**
+ * Compact single-line plain-text summary of where an order should go.
+ * Suitable for SMS or short admin previews.
+ */
+function deliveryAddressLine(order: any): string {
+    const sa = shippingAddressObj(order) || {};
+    const parts = [
+        sa.address || sa.street || sa.address_line1,
+        sa.city || sa.town,
+        sa.region || sa.state,
+    ].filter((p: any) => typeof p === 'string' && p.trim());
+    return parts.join(', ').trim();
+}
+
+/** Rich HTML block summarizing the delivery destination for both customer & admin emails. */
+function emailDeliveryDetails(order: any): string {
+    const sa = shippingAddressObj(order) || {};
+    const recipientName =
+        (typeof sa.full_name === 'string' && sa.full_name.trim()) ? sa.full_name.trim() :
+        [sa.firstName, sa.lastName].filter((p: any) => typeof p === 'string' && p.trim()).join(' ').trim() ||
+        [order.metadata?.first_name, order.metadata?.last_name].filter((p: any) => typeof p === 'string' && p.trim()).join(' ').trim() ||
+        'Customer';
+    const street  = (sa.address || sa.street || sa.address_line1 || '').toString().trim();
+    const city    = (sa.city || sa.town || '').toString().trim();
+    const region  = (sa.region || sa.state || '').toString().trim();
+    const country = (sa.country || 'Ghana').toString().trim();
+    const phone   = resolveOrderPhone(order);
+    const method  = deliveryMethodLabel(order.shipping_method);
+    const shippingFee = Number(order.shipping_total ?? 0);
+
+    const rows: string[] = [];
+    rows.push(emailInfoRow('Method', escapeHtml(method)));
+    rows.push(emailInfoRow('Recipient', escapeHtml(recipientName)));
+    if (phone)   rows.push(emailInfoRow('Phone', emailPhoneCell(phone)));
+    if (street)  rows.push(emailInfoRow('Address', escapeHtml(street)));
+    if (city)    rows.push(emailInfoRow('City / Town', escapeHtml(city)));
+    if (region)  rows.push(emailInfoRow('Region', escapeHtml(region)));
+    if (country) rows.push(emailInfoRow('Country', escapeHtml(country)));
+    rows.push(emailInfoRow(
+        'Delivery Fee',
+        shippingFee > 0 ? `GH₵${shippingFee.toFixed(2)}` : '<span style="color:#6b7280;font-weight:500;">To be confirmed</span>'
+    ));
+
+    return `<h3 style="margin:24px 0 12px;color:#111827;font-size:16px;font-weight:700;">&#128666; Delivery Details</h3>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:12px;overflow:hidden;margin:8px 0 20px;">
+${rows.join('')}
+</table>`;
 }
 
 /** Resolve customer phone from order row (top-level, shipping JSON, or metadata). */
@@ -296,6 +372,8 @@ export async function sendOrderConfirmation(order: any) {
   ${emailInfoRow('Total', `GH₵${Number(total).toFixed(2)}`)}
 </table>
 
+${emailDeliveryDetails(order)}
+
 ${emailShippingNotes(shippingNotes)}
 
 <p style="color:#374151;font-size:14px;line-height:1.6;margin:16px 0;">We're getting your order ready. You'll receive updates as it's processed and packaged.</p>
@@ -349,11 +427,13 @@ ${emailButton('Track Your Order', trackingUrl)}
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:12px;overflow:hidden;margin:16px 0;">
   ${emailInfoRow('Order', `#${order_number || id}`)}
-  ${emailInfoRow('Customer', `${name}`)}
-  ${emailInfoRow('Email', email)}
+  ${emailInfoRow('Customer', `${escapeHtml(name)}`)}
+  ${emailInfoRow('Email', escapeHtml(email))}
   ${emailInfoRow('Phone', emailPhoneCell(phone))}
-  ${trackingNumber ? emailInfoRow('Tracking', trackingNumber) : ''}
+  ${trackingNumber ? emailInfoRow('Tracking', escapeHtml(trackingNumber)) : ''}
 </table>
+
+${emailDeliveryDetails(order)}
 
 ${adminItemsHtml}
 
@@ -370,9 +450,14 @@ ${emailButton('View Order in Admin', `${baseUrl}/admin/orders/${id}`)}
 
     // 3. SMS to Customer (if phone exists)
     if (phone) {
+        const addressLine = deliveryAddressLine(order);
+        const methodLabel = deliveryMethodLabel(order.shipping_method);
+        const deliverySms = addressLine
+            ? ` Delivery: ${methodLabel} to ${addressLine}.`
+            : ` Delivery: ${methodLabel}.`;
         const smsMessage = trackingNumber
-            ? `Hi ${name}, your order #${order_number || id} is confirmed! Tracking: ${trackingNumber}. Track here: ${trackingUrl}${shippingNotesSms}`
-            : `Hi ${name}, your order #${order_number || id} at ${BRAND.name} is confirmed! Track here: ${trackingUrl}${shippingNotesSms}`;
+            ? `Hi ${name}, your order #${order_number || id} is confirmed! Tracking: ${trackingNumber}. Track here: ${trackingUrl}${deliverySms}${shippingNotesSms}`
+            : `Hi ${name}, your order #${order_number || id} at ${BRAND.name} is confirmed! Track here: ${trackingUrl}${deliverySms}${shippingNotesSms}`;
 
         await sendSMS({
             to: phone,
