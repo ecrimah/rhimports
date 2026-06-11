@@ -105,7 +105,7 @@ function deliveryMethodLabel(method?: string | null): string {
 }
 
 /** Escape a string for safe HTML interpolation. */
-function escapeHtml(value: unknown): string {
+export function escapeHtml(value: unknown): string {
     if (value === null || value === undefined) return '';
     return String(value)
         .replace(/&/g, '&amp;')
@@ -192,7 +192,7 @@ function emailShippingNotes(notes: string[]): string {
     if (notes.length === 0) return '';
     return `<div style="background-color:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:14px 16px;margin:20px 0;">
 <p style="font-weight:600;color:#92400e;margin:0 0 6px;font-size:13px;">&#9200; Shipping Notes</p>
-${notes.map(n => `<p style="color:#78350f;margin:3px 0;font-size:13px;">${n}</p>`).join('')}
+${notes.map(n => `<p style="color:#78350f;margin:3px 0;font-size:13px;">${escapeHtml(n)}</p>`).join('')}
 </div>`;
 }
 
@@ -361,14 +361,14 @@ export async function sendOrderConfirmation(order: any) {
 <div style="text-align:center;margin-bottom:24px;">
   <div style="width:64px;height:64px;background-color:${BRAND.colorLight};border-radius:50%;margin:0 auto 16px;line-height:64px;font-size:28px;">&#10003;</div>
   <h2 style="margin:0 0 4px;color:#111827;font-size:24px;">Order Confirmed!</h2>
-  <p style="margin:0;color:#6b7280;font-size:15px;">Thank you for your purchase, ${name}.</p>
+  <p style="margin:0;color:#6b7280;font-size:15px;">Thank you for your purchase, ${escapeHtml(name)}.</p>
 </div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:12px;overflow:hidden;margin:20px 0;">
   ${emailInfoRow('Order Number', `#${order_number || id}`)}
   ${emailInfoRow('Order Date', new Date(created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }))}
   ${emailInfoRow('Contact phone', emailPhoneCell(phone))}
-  ${trackingNumber ? emailInfoRow('Tracking', trackingNumber) : ''}
+  ${trackingNumber ? emailInfoRow('Tracking', escapeHtml(trackingNumber)) : ''}
   ${emailInfoRow('Total', `GH₵${Number(total).toFixed(2)}`)}
 </table>
 
@@ -400,17 +400,19 @@ ${emailButton('Track Your Order', trackingUrl)}
   </tr>
   ${orderItems.map((item: any) => {
     const rawImg: string = item.metadata?.image || '';
-    const imgSrc = rawImg
+    // Only allow http(s) or site-relative images; reject javascript:/data: etc.
+    const isSafeImg = /^https?:\/\//i.test(rawImg) || rawImg.startsWith('/');
+    const imgSrc = isSafeImg
         ? (rawImg.startsWith('http') ? rawImg : `${baseUrl}${rawImg.startsWith('/') ? '' : '/'}${rawImg}`)
         : '';
-    const variantLabel = item.variant_name ? `<br><span style="color:#9ca3af;font-size:11px;">${item.variant_name}</span>` : '';
+    const variantLabel = item.variant_name ? `<br><span style="color:#9ca3af;font-size:11px;">${escapeHtml(item.variant_name)}</span>` : '';
     const imgCell = imgSrc
-        ? `<img src="${imgSrc}" width="52" height="52" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;display:block;">`
+        ? `<img src="${escapeHtml(imgSrc)}" width="52" height="52" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;display:block;">`
         : `<div style="width:52px;height:52px;background-color:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;">&#128247;</div>`;
     return `<tr style="border-top:1px solid #e5e7eb;">
       <td style="padding:12px 10px 12px 14px;width:64px;vertical-align:top;">${imgCell}</td>
       <td style="padding:12px 4px;vertical-align:middle;">
-        <span style="color:#111827;font-size:13px;font-weight:600;">${item.product_name}</span>${variantLabel}
+        <span style="color:#111827;font-size:13px;font-weight:600;">${escapeHtml(item.product_name)}</span>${variantLabel}
       </td>
       <td style="padding:12px 14px;text-align:center;vertical-align:middle;color:#374151;font-size:14px;font-weight:600;">×${item.quantity}</td>
       <td style="padding:12px 14px;text-align:right;vertical-align:middle;color:#111827;font-size:14px;font-weight:700;white-space:nowrap;">GH₵${Number(item.total_price).toFixed(2)}</td>
@@ -440,7 +442,7 @@ ${adminItemsHtml}
 ${emailShippingNotes(shippingNotes)}
 
 ${emailButton('View Order in Admin', `${baseUrl}/admin/orders/${id}`)}
-`, `New order #${order_number} from ${name}`);
+`, `New order #${order_number} from ${escapeHtml(name)}`);
 
     await sendEmail({
         to: ADMIN_EMAIL,
@@ -529,13 +531,13 @@ export async function sendOrderStatusUpdate(order: any, newStatus: string) {
 <div style="text-align:center;margin-bottom:24px;">
   <div style="width:64px;height:64px;background-color:${sc.bg};border-radius:50%;margin:0 auto 16px;line-height:64px;font-size:28px;">${sc.icon}</div>
   <h2 style="margin:0 0 4px;color:#111827;font-size:22px;">Order Update</h2>
-  <p style="margin:0;color:#6b7280;font-size:14px;">Hi ${name}, here's an update on your order.</p>
+  <p style="margin:0;color:#6b7280;font-size:14px;">Hi ${escapeHtml(name)}, here's an update on your order.</p>
 </div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:12px;overflow:hidden;margin:20px 0;">
   ${emailInfoRow('Order Number', `#${order_number || id}`)}
   ${emailInfoRow('New Status', `<span style="display:inline-block;background-color:${sc.bg};color:${sc.color};padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;">${newStatus}</span>`)}
-  ${trackingNumber ? emailInfoRow('Tracking Number', trackingNumber) : ''}
+  ${trackingNumber ? emailInfoRow('Tracking Number', escapeHtml(trackingNumber)) : ''}
 </table>
 
 <p style="color:#374151;font-size:14px;line-height:1.6;margin:16px 0;">${message}</p>
@@ -563,7 +565,7 @@ export async function sendWelcomeMessage(user: { email: string, firstName: strin
         html: emailLayout(`
 <div style="text-align:center;margin-bottom:24px;">
   <div style="width:64px;height:64px;background-color:${BRAND.colorLight};border-radius:50%;margin:0 auto 16px;line-height:64px;font-size:28px;">&#128075;</div>
-  <h2 style="margin:0 0 4px;color:#111827;font-size:24px;">Welcome, ${firstName}!</h2>
+  <h2 style="margin:0 0 4px;color:#111827;font-size:24px;">Welcome, ${escapeHtml(firstName)}!</h2>
   <p style="margin:0;color:#6b7280;font-size:15px;">We're so glad you're here.</p>
 </div>
 
@@ -592,7 +594,7 @@ export async function sendWelcomeMessage(user: { email: string, firstName: strin
 </div>
 
 ${emailButton('Start Shopping', `${BRAND.url}/shop`)}
-`, `Welcome to ${BRAND.name}, ${firstName}!`)
+`, `Welcome to ${BRAND.name}, ${escapeHtml(firstName)}!`)
     });
 
     // SMS
@@ -638,7 +640,7 @@ export async function sendPaymentLink(order: any) {
 <div style="text-align:center;margin-bottom:24px;">
   <div style="width:64px;height:64px;background-color:#fef3c7;border-radius:50%;margin:0 auto 16px;line-height:64px;font-size:28px;">&#128179;</div>
   <h2 style="margin:0 0 4px;color:#111827;font-size:22px;">Complete Your Order</h2>
-  <p style="margin:0;color:#6b7280;font-size:14px;">Hi ${name}, your order is waiting for payment.</p>
+  <p style="margin:0;color:#6b7280;font-size:14px;">Hi ${escapeHtml(name)}, your order is waiting for payment.</p>
 </div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:12px;overflow:hidden;margin:20px 0;">
@@ -668,6 +670,14 @@ ${emailButton('Pay Now — GH₵' + Number(total).toFixed(2), paymentUrl, '#d977
 export async function sendContactMessage(data: { name: string, email: string, subject: string, message: string }) {
     const { name, email, subject, message } = data;
 
+    // Escape all user-supplied fields before embedding in HTML emails to
+    // prevent HTML/script injection into the recipient's (and admin's) mailbox.
+    const safeName = escapeHtml(name);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
+    const safeEmail = escapeHtml(email);
+    const mailtoHref = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent('Re: ' + subject)}`;
+
     // 1. Acknowledge to User
     await sendEmail({
         to: email,
@@ -679,16 +689,16 @@ export async function sendContactMessage(data: { name: string, email: string, su
   <p style="margin:0;color:#6b7280;font-size:14px;">We'll get back to you soon.</p>
 </div>
 
-<p style="color:#374151;font-size:14px;line-height:1.7;margin:16px 0;">Hi ${name},</p>
-<p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 16px;">Thank you for reaching out to ${BRAND.name}. We've received your message regarding <strong>"${subject}"</strong> and our team will respond as soon as possible.</p>
+<p style="color:#374151;font-size:14px;line-height:1.7;margin:16px 0;">Hi ${safeName},</p>
+<p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 16px;">Thank you for reaching out to ${BRAND.name}. We've received your message regarding <strong>"${safeSubject}"</strong> and our team will respond as soon as possible.</p>
 
 <div style="background-color:#f9fafb;border-left:4px solid ${BRAND.color};border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0;">
   <p style="color:#6b7280;font-size:12px;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px;">Your message</p>
-  <p style="color:#374151;font-size:14px;margin:0;line-height:1.6;">${message}</p>
+  <p style="color:#374151;font-size:14px;margin:0;line-height:1.6;">${safeMessage}</p>
 </div>
 
 <p style="color:#6b7280;font-size:13px;margin:16px 0 0;">We typically respond within 24 hours.</p>
-`, `Thanks for contacting us, ${name}`)
+`, `Thanks for contacting us, ${safeName}`)
     });
 
     // 2. Alert Admin
@@ -699,17 +709,17 @@ export async function sendContactMessage(data: { name: string, email: string, su
 <h2 style="margin:0 0 16px;color:#111827;font-size:20px;">&#128233; New Contact Message</h2>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb;border-radius:12px;overflow:hidden;margin:16px 0;">
-  ${emailInfoRow('From', name)}
-  ${emailInfoRow('Email', `<a href="mailto:${email}" style="color:${BRAND.color};">${email}</a>`)}
-  ${emailInfoRow('Subject', subject)}
+  ${emailInfoRow('From', safeName)}
+  ${emailInfoRow('Email', `<a href="${mailtoHref}" style="color:${BRAND.color};">${safeEmail}</a>`)}
+  ${emailInfoRow('Subject', safeSubject)}
 </table>
 
 <div style="background-color:#f9fafb;border-left:4px solid ${BRAND.color};border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0;">
   <p style="color:#6b7280;font-size:12px;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px;">Message</p>
-  <p style="color:#374151;font-size:14px;margin:0;line-height:1.6;">${message}</p>
+  <p style="color:#374151;font-size:14px;margin:0;line-height:1.6;">${safeMessage}</p>
 </div>
 
-${emailButton('Reply to ' + name, `mailto:${email}?subject=Re: ${encodeURIComponent(subject)}`)}
-`, `New contact from ${name}: ${subject}`)
+${emailButton('Reply to ' + safeName, mailtoHref)}
+`, `New contact from ${safeName}: ${safeSubject}`)
     });
 }

@@ -40,4 +40,6 @@ supabase/.temp
 # Vercel
 .vercel
 
-.vercel
+# TypeScript build artifacts
+tsconfig.tsbuildinfo
+*.tsbuildinfo

@@ -67,8 +67,10 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
 
             const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
+            // Use parameterized .eq() — never interpolate user input into a
+            // PostgREST .or() filter string (avoids filter injection).
             if (isUUID) {
-              query = query.or(`id.eq.${slug},slug.eq.${slug}`);
+              query = query.eq('id', slug);
             } else {
               query = query.eq('slug', slug);
             }

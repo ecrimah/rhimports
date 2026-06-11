@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { sendOrderConfirmation, sendOrderStatusUpdate, sendWelcomeMessage, sendContactMessage, sendPaymentLink, sendEmail, sendSMS, emailLayout } from '@/lib/notifications';
+import { sendOrderConfirmation, sendOrderStatusUpdate, sendWelcomeMessage, sendContactMessage, sendPaymentLink, sendEmail, sendSMS, emailLayout, escapeHtml } from '@/lib/notifications';
 import { checkRateLimit, getClientIdentifier, RATE_LIMITS } from '@/lib/rate-limit';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -37,11 +37,12 @@ export async function POST(request: Request) {
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
         // Authentication requirements based on notification type
-        // 'campaign' requires admin/staff role
-        // 'order_updated', 'order_status' requires admin/staff role (status updates from admin)
+        // 'campaign', 'order_updated', 'order_status', 'payment_link' require admin/staff role
+        //   ('payment_link' sends a branded payment request to an arbitrary recipient, so it
+        //    must never be triggerable by anonymous callers — abuse/phishing vector).
         // 'order_created', 'welcome', 'contact' can be triggered from checkout/forms
         
-        const requiresAdminAuth = ['campaign', 'order_updated', 'order_status'].includes(type);
+        const requiresAdminAuth = ['campaign', 'order_updated', 'order_status', 'payment_link'].includes(type);
 
         if (requiresAdminAuth) {
             const authToken = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -144,7 +145,7 @@ export async function POST(request: Request) {
                             seenEmails.add(emailKey);
                             const brandedHtml = emailLayout(`
 <h2 style="margin:0 0 16px;color:#111827;font-size:22px;text-align:center;">${subject}</h2>
-<p style="color:#374151;font-size:14px;line-height:1.7;margin:16px 0;">Hi ${recipient.name || 'Valued Customer'},</p>
+<p style="color:#374151;font-size:14px;line-height:1.7;margin:16px 0;">Hi ${escapeHtml(recipient.name || 'Valued Customer')},</p>
 <p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 16px;">${message.replace(/\n/g, '</p><p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 16px;">')}</p>
 `, subject);
                             await sendEmail({

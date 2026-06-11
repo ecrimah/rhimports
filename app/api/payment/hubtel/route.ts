@@ -82,10 +82,20 @@ export async function POST(req: Request) {
     }
 
     const clientReference = makeHubtelClientReference(orderNumber);
-    const safeRedirect =
-      typeof redirectUrl === 'string' && redirectUrl.startsWith('https://')
-        ? redirectUrl
-        : `${baseUrl}/order-success?order=${encodeURIComponent(orderNumber)}&payment_success=true`;
+    const defaultRedirect = `${baseUrl}/order-success?order=${encodeURIComponent(orderNumber)}&payment_success=true`;
+    // Only honor a caller-supplied redirect if it points back to our own
+    // origin. This prevents an open-redirect to an attacker/phishing site
+    // after a successful payment.
+    let safeRedirect = defaultRedirect;
+    if (typeof redirectUrl === 'string' && redirectUrl) {
+      try {
+        if (new URL(redirectUrl).origin === new URL(baseUrl).origin) {
+          safeRedirect = redirectUrl;
+        }
+      } catch {
+        // Malformed URL — fall back to the default success URL.
+      }
+    }
 
     const payeeName = getPayeeName(prepared.order);
     const payeePhone = normalizeGhPhone(prepared.order.phone || prepared.order.shipping_address?.phone);

@@ -28,12 +28,12 @@ export default function PaymentPage() {
 
     async function fetchOrder() {
       try {
-        // Fetch order by ID (UUID) or order_number
-        let query = supabase
-          .from('orders')
-          .select('*')
-          .or(`id.eq.${orderId},order_number.eq.${orderId}`)
-          .single();
+        // Fetch order by ID (UUID) or order_number using parameterized
+        // filters (never interpolate user input into a PostgREST .or() string).
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+        const query = isUUID
+          ? supabase.from('orders').select('*').eq('id', orderId).single()
+          : supabase.from('orders').select('*').eq('order_number', orderId).single();
 
         const { data, error: fetchError } = await query;
 

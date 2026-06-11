@@ -193,12 +193,13 @@ export default function CheckoutPage() {
       for (const item of cart) {
         let productId = item.id;
         
-        // If id is not a valid UUID, it might be a slug - try to resolve it
+        // If id is not a valid UUID, it might be a slug - try to resolve it.
+        // Use parameterized .eq() (never interpolate into a PostgREST .or()).
         if (!isValidUUID(productId)) {
           const { data: product } = await supabase
             .from('products')
             .select('id, metadata')
-            .or(`slug.eq.${productId},id.eq.${productId}`)
+            .eq('slug', productId)
             .single();
           
           if (product) {
