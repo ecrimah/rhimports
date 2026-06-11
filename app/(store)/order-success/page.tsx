@@ -9,7 +9,6 @@ function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams?.get('order');
   const paymentSuccess = searchParams?.get('payment_success');
-  const paystackReference = searchParams?.get('reference');
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(true);
@@ -37,11 +36,11 @@ function OrderSuccessContent() {
 
         // If redirected from payment and order is still pending, try to verify
         if (paymentSuccess === 'true' && orderData && orderData.payment_status !== 'paid') {
-          verifyPayment(orderNumber, orderData, paystackReference);
+          verifyPayment(orderNumber, orderData);
         } else if (orderData && orderData.payment_status !== 'paid') {
           const gateway = orderData.metadata?.payment_gateway || orderData.payment_method;
           if (gateway === 'hubtel' && orderData.metadata?.hubtel_client_reference) {
-            verifyPayment(orderNumber, orderData, paystackReference);
+            verifyPayment(orderNumber, orderData);
           }
         }
       } catch (err) {
@@ -51,10 +50,10 @@ function OrderSuccessContent() {
       }
     }
     fetchOrder();
-  }, [orderNumber, paystackReference, paymentSuccess]);
+  }, [orderNumber, paymentSuccess]);
 
-  // Payment verification - called when user is redirected from Paystack or Moolre with payment_success=true
-  const verifyPayment = async (orderNum: string, initialOrder: any, reference?: string | null) => {
+  // Payment verification - called when user is redirected from Hubtel or Moolre with payment_success=true
+  const verifyPayment = async (orderNum: string, initialOrder: any) => {
     setVerifying(true);
 
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -72,25 +71,15 @@ function OrderSuccessContent() {
     }
 
     const gateway = initialOrder?.metadata?.payment_gateway || initialOrder?.payment_method;
-    const paymentMethod = gateway === 'hubtel'
-      ? 'hubtel'
-      : gateway === 'paystack' || reference
-        ? 'paystack'
-        : gateway === 'moolre'
-          ? 'moolre'
-          : 'hubtel';
+    const paymentMethod = gateway === 'moolre' ? 'moolre' : 'hubtel';
 
     try {
-      const url = paymentMethod === 'paystack'
-        ? '/api/payment/paystack/verify'
-        : paymentMethod === 'hubtel'
-          ? '/api/payment/hubtel/verify'
-          : '/api/payment/moolre/verify';
-      const body = paymentMethod === 'paystack'
-        ? JSON.stringify({ orderNumber: orderNum, reference: reference || orderNum })
-        : paymentMethod === 'hubtel'
-          ? JSON.stringify({ orderNumber: orderNum, email: initialOrder?.email })
-          : JSON.stringify({ orderNumber: orderNum, fromRedirect: true });
+      const url = paymentMethod === 'hubtel'
+        ? '/api/payment/hubtel/verify'
+        : '/api/payment/moolre/verify';
+      const body = paymentMethod === 'hubtel'
+        ? JSON.stringify({ orderNumber: orderNum, email: initialOrder?.email })
+        : JSON.stringify({ orderNumber: orderNum, fromRedirect: true });
 
       const res = await fetch(url, {
         method: 'POST',

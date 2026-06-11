@@ -36,7 +36,7 @@ Complete these steps to finish launching the site.
 
 - [ ] **Supabase** — create project, run `/supabase/migrations/` in order, update keys in `.env.local`
 - [ ] **Email (Resend)** — create account at resend.com, verify `rnhimports.com` domain, update `RESEND_API_KEY`
-- [ ] **Payments** — configure Moolre and/or Paystack keys in `.env.local`
+- [ ] **Payments** — configure Hubtel and/or Moolre keys in `.env.local`
 - [ ] **Analytics** — set `NEXT_PUBLIC_GA_MEASUREMENT_ID` for Google Analytics
 
 ---
