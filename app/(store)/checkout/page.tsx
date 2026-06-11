@@ -55,7 +55,7 @@ export default function CheckoutPage() {
   ];
 
   const [deliveryMethod, setDeliveryMethod] = useState('doorstep');
-  const [paymentMethod] = useState<'moolre'>('moolre');
+  const [paymentMethod] = useState<'hubtel'>('hubtel');
   const [errors, setErrors] = useState<any>({});
 
 
@@ -248,28 +248,42 @@ export default function CheckoutPage() {
       });
 
       // 4. Handle Payment Redirects or Completion
-      if (paymentMethod === 'moolre') {
+      if (paymentMethod === 'hubtel') {
         try {
-          const paymentRes = await fetch('/api/payment/moolre', {
+          const paymentRes = await fetch('/api/payment/hubtel', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               orderId: orderNumber,
-              amount: total,
               customerEmail: shippingData.email,
             }),
           });
-          let paymentResult: { success?: boolean; message?: string; url?: string };
+          let paymentResult: {
+            success?: boolean;
+            message?: string;
+            url?: string;
+            removedItems?: { product_name: string; variant_name?: string; quantity: number }[];
+            all_out_of_stock?: boolean;
+          };
           try {
             paymentResult = await paymentRes.json();
           } catch {
             throw new Error(paymentRes.ok ? 'Invalid response from payment server.' : `Payment error (${paymentRes.status}). Please try again or contact support.`);
           }
           if (!paymentResult.success) {
+            if (paymentResult.all_out_of_stock) {
+              throw new Error('All items in your order are out of stock. Please update your cart and try again.');
+            }
             throw new Error(paymentResult.message || 'Payment initialization failed');
           }
           if (!paymentResult.url) {
             throw new Error('No payment link received. Please try again or contact support.');
+          }
+          if (paymentResult.removedItems && paymentResult.removedItems.length > 0) {
+            const removedNames = paymentResult.removedItems
+              .map((item) => `${item.product_name}${item.variant_name ? ` (${item.variant_name})` : ''}`)
+              .join(', ');
+            alert(`Some items were out of stock and removed from your order: ${removedNames}. The updated total will be charged.`);
           }
           clearCart();
           window.location.href = paymentResult.url;
@@ -577,12 +591,12 @@ export default function CheckoutPage() {
                   </div>
 
                   <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4">Payment Method</h2>
-                  <p className="text-sm text-gray-600 mb-4">Select how you’d like to pay. Pay with Mobile Money (MTN, Vodafone, AirtelTigo).</p>
+                  <p className="text-sm text-gray-600 mb-4">You will be redirected to Hubtel&apos;s secure checkout to pay with Mobile Money, card, or other supported methods.</p>
                   <div className="flex items-center gap-3 p-4 border-2 border-gray-900 bg-gray-50 rounded-xl">
-                    <i className="ri-smartphone-line text-xl text-gray-600 flex-shrink-0"></i>
+                    <i className="ri-secure-payment-line text-xl text-gray-600 flex-shrink-0"></i>
                     <div className="min-w-0">
-                      <p className="font-semibold text-gray-900">Mobile Money</p>
-                      <p className="text-xs text-gray-600 truncate">MTN, Vodafone, AirtelTigo</p>
+                      <p className="font-semibold text-gray-900">Hubtel Online Checkout</p>
+                      <p className="text-xs text-gray-600 truncate">Mobile Money, card &amp; more</p>
                     </div>
                   </div>
 
@@ -608,7 +622,7 @@ export default function CheckoutPage() {
                           Processing...
                         </>
                       ) : (
-                        'Pay with Mobile Money'
+                        'Pay with Hubtel'
                       )}
                     </button>
                   </div>

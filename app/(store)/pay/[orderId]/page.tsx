@@ -12,12 +12,12 @@ export default function PaymentPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const orderId = params?.orderId ?? '';
-  const wasCanceled = searchParams?.get('canceled') === '1';
+  const wasCanceled = searchParams?.get('cancelled') === 'true' || searchParams?.get('canceled') === '1';
 
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [paymentMethod] = useState<'moolre'>('moolre');
+  const [paymentMethod] = useState<'hubtel'>('hubtel');
   const [error, setError] = useState<string | null>(null);
   const [storeName, setStoreName] = useState('RNH Imports');
 
@@ -75,19 +75,24 @@ export default function PaymentPage() {
     setProcessing(true);
     setError(null);
 
-    const url = '/api/payment/moolre';
+    const url = '/api/payment/hubtel';
     try {
       const paymentRes = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId: order.order_number,
-          amount: order.total,
           customerEmail: order.email,
         }),
       });
 
-      let paymentResult: { success?: boolean; message?: string; url?: string };
+      let paymentResult: {
+        success?: boolean;
+        message?: string;
+        url?: string;
+        removedItems?: { product_name: string; variant_name?: string; quantity: number }[];
+        all_out_of_stock?: boolean;
+      };
       try {
         paymentResult = await paymentRes.json();
       } catch {
@@ -95,11 +100,21 @@ export default function PaymentPage() {
       }
 
       if (!paymentResult.success) {
+        if (paymentResult.all_out_of_stock) {
+          throw new Error('All items in this order are out of stock. Please contact support.');
+        }
         throw new Error(paymentResult.message || 'Payment initialization failed');
       }
 
       if (!paymentResult.url) {
         throw new Error('No payment link received. Please try again or contact support.');
+      }
+
+      if (paymentResult.removedItems && paymentResult.removedItems.length > 0) {
+        const removedNames = paymentResult.removedItems
+          .map((item) => `${item.product_name}${item.variant_name ? ` (${item.variant_name})` : ''}`)
+          .join(', ');
+        setError(`Some items were out of stock and removed: ${removedNames}. Proceeding with the updated total.`);
       }
 
       window.location.href = paymentResult.url;
@@ -222,14 +237,14 @@ export default function PaymentPage() {
           </div>
         )}
 
-        {/* Payment method - Mobile Money only */}
+        {/* Payment method - Hubtel hosted checkout */}
         <div className="mb-6 bg-white rounded-xl shadow-sm p-6">
           <h2 className="text-base font-bold text-gray-900 mb-4">Payment method</h2>
           <div className="flex items-center gap-4 p-4 rounded-xl border-2 border-gray-900 bg-gray-50">
-            <i className="ri-smartphone-line text-2xl text-gray-700 flex-shrink-0"></i>
+            <i className="ri-secure-payment-line text-2xl text-gray-700 flex-shrink-0"></i>
             <div>
-              <span className="font-semibold text-gray-900 block">Mobile Money</span>
-              <span className="text-xs text-gray-600">MTN, Vodafone, AirtelTigo</span>
+              <span className="font-semibold text-gray-900 block">Hubtel Online Checkout</span>
+              <span className="text-xs text-gray-600">Mobile Money, card &amp; more</span>
             </div>
           </div>
         </div>
@@ -253,7 +268,7 @@ export default function PaymentPage() {
               <i className="ri-secure-payment-line mr-2"></i>
               {order?.payment_status === 'failed'
                 ? `Retry Payment (GH₵ ${order?.total?.toFixed(2)})`
-                : `Pay GH₵ ${order?.total?.toFixed(2)} with Mobile Money`}
+                : `Pay GH₵ ${order?.total?.toFixed(2)} with Hubtel`}
             </>
           )}
         </button>
@@ -262,7 +277,7 @@ export default function PaymentPage() {
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-500 flex items-center justify-center">
             <i className="ri-lock-line mr-1"></i>
-            Secure payment · Mobile Money
+            Secure payment · Hubtel
           </p>
         </div>
 

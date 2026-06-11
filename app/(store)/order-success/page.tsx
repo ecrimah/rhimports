@@ -38,6 +38,11 @@ function OrderSuccessContent() {
         // If redirected from payment and order is still pending, try to verify
         if (paymentSuccess === 'true' && orderData && orderData.payment_status !== 'paid') {
           verifyPayment(orderNumber, orderData, paystackReference);
+        } else if (orderData && orderData.payment_status !== 'paid') {
+          const gateway = orderData.metadata?.payment_gateway || orderData.payment_method;
+          if (gateway === 'hubtel' && orderData.metadata?.hubtel_client_reference) {
+            verifyPayment(orderNumber, orderData, paystackReference);
+          }
         }
       } catch (err) {
         console.error('Error fetching order:', err);
@@ -66,15 +71,26 @@ function OrderSuccessContent() {
       return;
     }
 
-    const paymentMethod = initialOrder?.payment_method || (reference ? 'paystack' : 'moolre');
+    const gateway = initialOrder?.metadata?.payment_gateway || initialOrder?.payment_method;
+    const paymentMethod = gateway === 'hubtel'
+      ? 'hubtel'
+      : gateway === 'paystack' || reference
+        ? 'paystack'
+        : gateway === 'moolre'
+          ? 'moolre'
+          : 'hubtel';
 
     try {
       const url = paymentMethod === 'paystack'
         ? '/api/payment/paystack/verify'
-        : '/api/payment/moolre/verify';
+        : paymentMethod === 'hubtel'
+          ? '/api/payment/hubtel/verify'
+          : '/api/payment/moolre/verify';
       const body = paymentMethod === 'paystack'
         ? JSON.stringify({ orderNumber: orderNum, reference: reference || orderNum })
-        : JSON.stringify({ orderNumber: orderNum, fromRedirect: true });
+        : paymentMethod === 'hubtel'
+          ? JSON.stringify({ orderNumber: orderNum, email: initialOrder?.email })
+          : JSON.stringify({ orderNumber: orderNum, fromRedirect: true });
 
       const res = await fetch(url, {
         method: 'POST',
