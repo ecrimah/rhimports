@@ -55,7 +55,7 @@ export default function CheckoutPage() {
   ];
 
   const [deliveryMethod, setDeliveryMethod] = useState('doorstep');
-  const [paymentMethod] = useState<'hubtel'>('hubtel');
+  const [paymentMethod, setPaymentMethod] = useState<'hubtel' | 'moolre'>('hubtel');
   const [errors, setErrors] = useState<any>({});
 
 
@@ -248,15 +248,17 @@ export default function CheckoutPage() {
       });
 
       // 4. Handle Payment Redirects or Completion
-      if (paymentMethod === 'hubtel') {
+      if (paymentMethod === 'hubtel' || paymentMethod === 'moolre') {
         try {
-          const paymentRes = await fetch('/api/payment/hubtel', {
+          const endpoint = paymentMethod === 'hubtel' ? '/api/payment/hubtel' : '/api/payment/moolre';
+          const requestBody = paymentMethod === 'hubtel'
+            ? { orderId: orderNumber, customerEmail: shippingData.email }
+            : { orderId: orderNumber, amount: total, customerEmail: shippingData.email };
+
+          const paymentRes = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              orderId: orderNumber,
-              customerEmail: shippingData.email,
-            }),
+            body: JSON.stringify(requestBody),
           });
           let paymentResult: {
             success?: boolean;
@@ -591,13 +593,39 @@ export default function CheckoutPage() {
                   </div>
 
                   <h2 className="text-xl font-bold text-gray-900 mt-8 mb-4">Payment Method</h2>
-                  <p className="text-sm text-gray-600 mb-4">You will be redirected to Hubtel&apos;s secure checkout to pay with Mobile Money, card, or other supported methods.</p>
-                  <div className="flex items-center gap-3 p-4 border-2 border-gray-900 bg-gray-50 rounded-xl">
-                    <i className="ri-secure-payment-line text-xl text-gray-600 flex-shrink-0"></i>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-gray-900">Hubtel Online Checkout</p>
-                      <p className="text-xs text-gray-600 truncate">Mobile Money, card &amp; more</p>
-                    </div>
+                  <p className="text-sm text-gray-600 mb-4">Choose how you&apos;d like to pay. You&apos;ll be redirected to a secure checkout page.</p>
+                  <div className="space-y-3">
+                    <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-colors ${paymentMethod === 'hubtel' ? 'border-gray-900 bg-gray-50' : 'border-gray-300 hover:border-gray-400'}`}>
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="hubtel"
+                        checked={paymentMethod === 'hubtel'}
+                        onChange={() => setPaymentMethod('hubtel')}
+                        className="w-5 h-5 text-gray-900"
+                      />
+                      <i className="ri-secure-payment-line text-xl text-gray-600 flex-shrink-0"></i>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-900">Hubtel Online Checkout</p>
+                        <p className="text-xs text-gray-600 truncate">Mobile Money, card &amp; more</p>
+                      </div>
+                    </label>
+
+                    <label className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-colors ${paymentMethod === 'moolre' ? 'border-gray-900 bg-gray-50' : 'border-gray-300 hover:border-gray-400'}`}>
+                      <input
+                        type="radio"
+                        name="payment"
+                        value="moolre"
+                        checked={paymentMethod === 'moolre'}
+                        onChange={() => setPaymentMethod('moolre')}
+                        className="w-5 h-5 text-gray-900"
+                      />
+                      <i className="ri-smartphone-line text-xl text-gray-600 flex-shrink-0"></i>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-gray-900">Mobile Money (Moolre)</p>
+                        <p className="text-xs text-gray-600 truncate">MTN, Vodafone, AirtelTigo</p>
+                      </div>
+                    </label>
                   </div>
 
                   <div className="flex flex-col-reverse md:flex-row gap-4 mt-6">
@@ -622,7 +650,7 @@ export default function CheckoutPage() {
                           Processing...
                         </>
                       ) : (
-                        'Pay with Hubtel'
+                        paymentMethod === 'hubtel' ? 'Pay with Hubtel' : 'Pay with Mobile Money'
                       )}
                     </button>
                   </div>

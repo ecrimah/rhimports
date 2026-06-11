@@ -162,20 +162,28 @@ export async function prepareOrderForHubtelPayment(
     ...(removedItems.length > 0 ? { auto_removed_items: removedItems } : {}),
   };
 
-  const { data: updatedOrder, error: updateError } = await supabase
+  const { error: updateError } = await supabase
     .from('orders')
     .update({
       subtotal: roundMoney(subtotal),
       total: computedTotal,
       metadata,
     })
-    .eq('id', order.id)
-    .select(ORDER_SELECT)
-    .single();
+    .eq('id', order.id);
 
-  if (updateError || !updatedOrder) {
-    throw new Error(updateError?.message || 'Failed to update order totals');
+  if (updateError) {
+    throw new Error(updateError.message || 'Failed to update order totals');
   }
+
+  // Build the updated order in-memory rather than relying on a follow-up
+  // SELECT (which can be restricted by RLS when the service role key is
+  // misconfigured), so callers always get the fresh totals.
+  const updatedOrder = {
+    ...order,
+    subtotal: roundMoney(subtotal),
+    total: computedTotal,
+    metadata,
+  };
 
   return {
     order: updatedOrder,
