@@ -50,6 +50,7 @@ interface ProductCardProps {
   reviewCount?: number;
   badge?: string;
   inStock?: boolean;
+  isPreorder?: boolean;
   maxStock?: number;
   moq?: number;
   hasVariants?: boolean;
@@ -71,6 +72,7 @@ export default function ProductCard({
   reviewCount = 0,
   badge,
   inStock = true,
+  isPreorder = false,
   maxStock = 50,
   moq = 1,
   hasVariants = false,
@@ -147,6 +149,12 @@ export default function ProductCard({
         <div
           className={`absolute flex flex-col items-start pointer-events-none ${compact ? 'top-1.5 left-1.5 gap-1' : 'top-3 left-3 gap-1.5'}`}
         >
+          <span
+            className={`inline-flex items-center gap-1 font-bold uppercase tracking-[0.12em] rounded-full shadow-sm text-white ${isPreorder ? 'bg-amber-500' : 'bg-emerald-500'} ${compact ? 'text-[8px] sm:text-[10px] px-1.5 py-0.5 sm:px-2.5 sm:py-1' : 'text-[10px] px-2.5 py-1'}`}
+          >
+            <i className={`${isPreorder ? 'ri-time-line' : 'ri-checkbox-circle-line'} ${compact ? 'text-[9px] sm:text-[11px]' : 'text-xs'}`} />
+            {isPreorder ? 'Preorder' : 'Available'}
+          </span>
           {badge && (
             <span
               className={`inline-flex items-center gap-0.5 bg-black/85 backdrop-blur-md text-white font-bold uppercase tracking-[0.12em] rounded-full shadow-sm ${compact ? 'text-[8px] sm:text-[10px] px-1.5 py-0.5 sm:px-2.5 sm:py-1' : 'text-[10px] px-2.5 py-1'}`}

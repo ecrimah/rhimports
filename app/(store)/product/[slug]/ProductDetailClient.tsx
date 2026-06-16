@@ -119,7 +119,8 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
           features: ['Premium Quality', 'Authentic Design'],
           featured: ['Premium Quality', 'Authentic Design'],
           care: 'Handle with care.',
-          preorderShipping: productData.metadata?.preorder_shipping || null
+          preorderShipping: productData.metadata?.preorder_shipping || null,
+          isPreorder: productData.metadata?.is_preorder ?? !!productData.metadata?.preorder_shipping
         };
 
         // Ensure at least one image/placeholder
@@ -167,6 +168,7 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                 rating: p.rating_avg || 0,
                 reviewCount: 0,
                 inStock: effectiveStock > 0,
+                isPreorder: p.metadata?.is_preorder ?? !!p.metadata?.preorder_shipping,
                 maxStock: effectiveStock || 50,
                 moq: p.moq || 1,
                 hasVariants,
@@ -594,6 +596,22 @@ export default function ProductDetailClient({ slug }: { slug: string }) {
                     >
                       Buy Now
                     </button>
+                  )}
+                </div>
+
+                {/* Availability badge */}
+                <div className="flex items-center gap-2 mb-4">
+                  {product.isPreorder ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold uppercase tracking-wide px-3 py-1">
+                      <i className="ri-time-line"></i> Preorder
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wide px-3 py-1">
+                      <i className="ri-checkbox-circle-line"></i> Available
+                    </span>
+                  )}
+                  {product.isPreorder && product.preorderShipping && (
+                    <span className="text-sm text-gray-600">{product.preorderShipping}</span>
                   )}
                 </div>
 

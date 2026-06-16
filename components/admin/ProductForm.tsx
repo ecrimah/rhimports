@@ -28,6 +28,9 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
     const [status, setStatus] = useState(initialData?.status || 'Active');
     const [featured, setFeatured] = useState(initialData?.featured || false);
     const [preorderShipping, setPreorderShipping] = useState(initialData?.metadata?.preorder_shipping || '');
+    const [isPreorder, setIsPreorder] = useState<boolean>(
+        initialData?.metadata?.is_preorder ?? !!initialData?.metadata?.preorder_shipping
+    );
     const [activeTab, setActiveTab] = useState('general');
 
     // Auto-generate SKU function
@@ -377,7 +380,8 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                 tags: (keywords as string).split(',').map((k: string) => k.trim()).filter(Boolean),
                 metadata: {
                     low_stock_threshold: parseInt(lowStockThreshold) || 5,
-                    preorder_shipping: preorderShipping.trim() || null,
+                    is_preorder: isPreorder,
+                    preorder_shipping: isPreorder ? (preorderShipping.trim() || null) : null,
                     option_names: activeGroups.map((g, i) => g.name || `Option ${i + 1}`),
                     product_options: Object.fromEntries(
                         enabledDefaults.map(d => [d.key, {
@@ -620,18 +624,51 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                 </label>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                                    Pre-order / Estimated Shipping
-                                </label>
-                                <input
-                                    type="text"
-                                    value={preorderShipping}
-                                    onChange={(e) => setPreorderShipping(e.target.value)}
-                                    placeholder="e.g., Ships in 14 days, Available March 15"
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Leave empty if product ships immediately. Otherwise, enter estimated shipping time.</p>
+                            <div className="rounded-2xl border border-gray-200 p-4">
+                                <div className="flex items-start gap-3">
+                                    <button
+                                        type="button"
+                                        role="switch"
+                                        aria-checked={isPreorder}
+                                        onClick={() => setIsPreorder(!isPreorder)}
+                                        className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 ${isPreorder ? 'bg-amber-500' : 'bg-gray-300'}`}
+                                    >
+                                        <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${isPreorder ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                                    </button>
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-semibold text-gray-900">Pre-order</span>
+                                            {isPreorder ? (
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
+                                                    <i className="ri-time-line"></i> Preorder
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5">
+                                                    <i className="ri-checkbox-circle-line"></i> Available
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            When turned on, this product is marked as a pre-order. A <span className="font-semibold text-amber-600">Preorder</span> badge shows on the product card; otherwise customers see an <span className="font-semibold text-emerald-600">Available</span> badge.
+                                        </p>
+
+                                        {isPreorder && (
+                                            <div className="mt-4">
+                                                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                                                    Estimated ship / availability
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={preorderShipping}
+                                                    onChange={(e) => setPreorderShipping(e.target.value)}
+                                                    placeholder="e.g., Ships in 14 days, Available March 15"
+                                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent transition-all"
+                                                />
+                                                <p className="text-xs text-gray-500 mt-1">Optional. Shown on the product card and order summary so customers know when to expect the item.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
