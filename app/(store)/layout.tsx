@@ -14,7 +14,7 @@ import dynamic from 'next/dynamic';
 const SessionTimeoutWarning = dynamic(() => import('@/components/SessionTimeoutWarning'), { ssr: false });
 const PWAPrompt = dynamic(() => import('@/components/PWAPrompt'), { ssr: false });
 const PWAInstaller = dynamic(() => import('@/components/PWAInstaller'), { ssr: false });
-const PushNotificationManager = dynamic(() => import('@/components/PushNotificationManager'), { ssr: false });
+// const PushNotificationManager = dynamic(() => import('@/components/PushNotificationManager'), { ssr: false });
 const OfflineIndicator = dynamic(() => import('@/components/OfflineIndicator'), { ssr: false });
 const NetworkStatusMonitor = dynamic(() => import('@/components/NetworkStatusMonitor'), { ssr: false });
 const UpdatePrompt = dynamic(() => import('@/components/UpdatePrompt'), { ssr: false });
@@ -43,7 +43,7 @@ export default function StoreLayout({
         <MobileBottomNav />
         <SessionTimeoutWarning />
         <PWAPrompt />
-        <PushNotificationManager />
+        {/* <PushNotificationManager /> */}
         <OfflineIndicator />
         <NetworkStatusMonitor />
         <UpdatePrompt />
