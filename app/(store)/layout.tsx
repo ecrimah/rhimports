@@ -20,6 +20,7 @@ const NetworkStatusMonitor = dynamic(() => import('@/components/NetworkStatusMon
 const UpdatePrompt = dynamic(() => import('@/components/UpdatePrompt'), { ssr: false });
 const LiveSalesNotification = dynamic(() => import('@/components/LiveSalesNotification'), { ssr: false });
 const PreorderPopup = dynamic(() => import('@/components/PreorderPopup'), { ssr: false });
+const WhatsAppButton = dynamic(() => import('@/components/WhatsAppButton'), { ssr: false });
 
 export default function StoreLayout({
   children,
@@ -48,6 +49,7 @@ export default function StoreLayout({
         <UpdatePrompt />
         <LiveSalesNotification />
         <PreorderPopup />
+        <WhatsAppButton />
       </div>
     </CMSProvider>
   );
