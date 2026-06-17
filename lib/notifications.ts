@@ -1,5 +1,18 @@
 import { Resend } from 'resend';
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+
+// Server-side client that bypasses RLS for reads we make while building
+// notifications (e.g. order items). Falls back to the anon client if the
+// service role key is unavailable (it is never exposed to the browser).
+const supabaseAdmin =
+    process.env.SUPABASE_SERVICE_ROLE_KEY && process.env.NEXT_PUBLIC_SUPABASE_URL
+        ? createClient(
+              process.env.NEXT_PUBLIC_SUPABASE_URL,
+              process.env.SUPABASE_SERVICE_ROLE_KEY,
+              { auth: { autoRefreshToken: false, persistSession: false } }
+          )
+        : supabase;
 
 const resend = new Resend(process.env.RESEND_API_KEY || 'missing_api_key');
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@example.com';
@@ -335,7 +348,7 @@ export async function sendOrderConfirmation(order: any) {
     let shippingNotes: string[] = [];
     let orderItems: any[] = [];
     try {
-        const { data: items } = await supabase
+        const { data: items } = await supabaseAdmin
             .from('order_items')
             .select('product_name, variant_name, quantity, unit_price, total_price, metadata')
             .eq('order_id', id);
